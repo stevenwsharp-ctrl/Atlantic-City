@@ -372,12 +372,18 @@ function blank(city) {
 }
 /* Shared editing. Paste your Firebase Realtime Database URL here to let anyone with a trip link edit it.
    Leave it empty and everything stays on each phone. Setup steps are in README.md. */
-const SYNC_URL = "";
+const SYNC_URL = "https://atlantic-city-e30da-default-rtdb.firebaseio.com";
 const tripFromHash = () => (location.hash.match(/^#t([a-z0-9]{8,32})$/) || [])[1] || null;
-let tripId = SYNC_URL ? tripFromHash() : null;
+/* The plain address is one shared trip for everyone; a #t link opens a separate trip. */
+const MAIN_TRIP = "mainshared";
+let tripId = SYNC_URL ? (tripFromHash() || MAIN_TRIP) : null;
 const storeKey = () => tripId ? KEY + ":" + tripId : KEY;
 let S;
 try { S = JSON.parse(localStorage.getItem(storeKey())); } catch (e) { S = null; }
+if ((!S || !S.people) && tripId === MAIN_TRIP) {
+  /* first run with sharing on: bring along anything this phone saved before */
+  try { const old = JSON.parse(localStorage.getItem(KEY)); if (old && old.people && !old.example) S = old; } catch (e) {}
+}
 if (!S || !S.people) S = tripId ? blank("ac") : example();
 S.budgets = S.budgets || {};
 function save() {
@@ -435,7 +441,7 @@ function pull() {
   const ver = localVer;
   return fetch(tripUrl()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
     if (ver !== localVer || pushTimer || inflight) { pullWanted = true; if (!pushTimer && !inflight) setTimeout(pull, 100); return; }
-    if (d) { fromRemote(d); synced = toRemote(); } else { synced = {}; push(); }
+    if (d) { fromRemote(d); synced = toRemote(); } else { if (S.example) { const c = S.city; S = blank(c); S.budgets = {}; } synced = {}; push(); }
     try { localStorage.setItem(storeKey(), JSON.stringify(S)); } catch (e) {}
     setSync("live"); safeRender();
   }).catch(() => setSync("offline"));
@@ -462,8 +468,8 @@ function newSharedTrip() {
   history.replaceState(null, "", "#t" + tripId);
   synced = {}; push(); startSync();
 }
-const shareLink = () => location.href.split("#")[0] + "#t" + tripId;
-window.addEventListener("hashchange", () => { if (SYNC_URL && tripFromHash() !== tripId) location.reload(); });
+const shareLink = () => location.href.split("#")[0] + (tripId === MAIN_TRIP ? "" : "#t" + tripId);
+window.addEventListener("hashchange", () => { if (SYNC_URL && (tripFromHash() || MAIN_TRIP) !== tripId) location.reload(); });
 document.addEventListener("focusout", () => { if (pendingRender) setTimeout(() => { if (pendingRender) { pendingRender = false; safeRender(); } }, 50); });
 const person = id => S.people.find(p => p.id === id);
 const pname = id => (person(id) || { name: "Someone" }).name;
@@ -1371,9 +1377,9 @@ function openCitySheet() {
     el => el.addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (b) { S.city = b.dataset.c; save(); closeSheet(); render(); } }));
 }
 function openFreshSheet() {
-  openSheet(`<div class="sheet-h"><h2>Start your trip</h2></div><div class="muted">This clears the example crew, sessions and bills.</div>
+  openSheet(`<div class="sheet-h"><h2>Start your trip</h2></div><div class="muted">${tripId === MAIN_TRIP && !S.example ? "This clears the crew, sessions and bills for everyone using this app." : "This clears the example crew, sessions and bills."}</div>
     <div class="btn-row"><button class="btn" id="fNo">Keep looking</button><button class="btn gold" id="fYes">Start fresh</button></div>`,
-    el => { $("#fNo", el).onclick = closeSheet; $("#fYes", el).onclick = () => { S = blank(S.city); S.budgets = {}; newSharedTrip(); save(); closeSheet(); render(); openCrewSheet(); }; });
+    el => { $("#fNo", el).onclick = closeSheet; $("#fYes", el).onclick = () => { S = blank(S.city); S.budgets = {}; if (tripId !== MAIN_TRIP) newSharedTrip(); save(); closeSheet(); render(); openCrewSheet(); }; });
 }
 
 render();
