@@ -1,0 +1,14 @@
+{
+  "name": "House Money",
+  "short_name": "House Money",
+  "description": "Track gambling results, play credit card roulette and split rooms and bills on casino trips.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08130e",
+  "theme_color": "#0d5c3d",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

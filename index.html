@@ -1,0 +1,1388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>House Money</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0e0f11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: private-bank style phone app. Large serif titles, inset grouped lists, hairlines, one champagne accent. Dark first. */
+:root {
+  --bg: #0e0f11; --surface: #17191c; --raised: #202328; --line: rgba(255,255,255,.08); --line-2: rgba(255,255,255,.14);
+  --ink: #f3f1ec; --ink-2: #c9c7c1; --muted: #858a92; --gold: #cfaa63; --gold-ink: #1a1408;
+  --win: #4cc08e; --loss: #ef6b5f; --sel: #f3f1ec; --sel-ink: #0e0f11;
+  --av-1: #3a4a63; --av-2: #5a3d48; --av-3: #3c5a4c; --av-4: #5e5136; --av-5: #4b3e63; --av-6: #2f5559;
+  --bar-bg: rgba(14,15,17,.82);
+  --f-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-body: "Geist", -apple-system, system-ui, "Segoe UI", sans-serif;
+  --f-num: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #f4f3f0; --surface: #ffffff; --raised: #ecebe7; --line: rgba(20,21,24,.08); --line-2: rgba(20,21,24,.16);
+  --ink: #141518; --ink-2: #3b3d42; --muted: #73777e; --gold: #9c7a36; --gold-ink: #ffffff;
+  --win: #17855a; --loss: #c8443a; --sel: #141518; --sel-ink: #ffffff;
+  --av-1: #5d7396; --av-2: #95646f; --av-3: #5b8a72; --av-4: #9a8350; --av-5: #7a6699; --av-6: #4d8388;
+  --bar-bg: rgba(244,243,240,.85); color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #f4f3f0; --surface: #ffffff; --raised: #ecebe7; --line: rgba(20,21,24,.08); --line-2: rgba(20,21,24,.16);
+  --ink: #141518; --ink-2: #3b3d42; --muted: #73777e; --gold: #9c7a36; --gold-ink: #ffffff;
+  --win: #17855a; --loss: #c8443a; --sel: #141518; --sel-ink: #ffffff;
+  --av-1: #5d7396; --av-2: #95646f; --av-3: #5b8a72; --av-4: #9a8350; --av-5: #7a6699; --av-6: #4d8388;
+  --bar-bg: rgba(244,243,240,.85); color-scheme: light; }
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; letter-spacing: -.005em;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.win { color: var(--win); } .loss { color: var(--loss); }
+.muted { color: var(--muted); } .small { font-size: 13px; }
+.gutter { padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+
+/* top bar */
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bar-bg);
+  -webkit-backdrop-filter: saturate(140%) blur(18px); backdrop-filter: saturate(140%) blur(18px);
+  padding-block: 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid transparent; }
+header.top.scrolled { border-bottom-color: var(--line); }
+.trip { background: none; border: 0; padding: 0; text-align: left; margin-right: auto; display: grid; min-width: 0; }
+.trip .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.trip .where { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.trip .where svg { width: 14px; height: 14px; color: var(--muted); }
+.stack { display: flex; background: none; border: 0; padding: 0; align-items: center; }
+.stack .mono { width: 30px; height: 30px; font-size: 12px; margin-left: -8px; box-shadow: 0 0 0 2px var(--bg); }
+.stack .mono:first-child { margin-left: 0; }
+.round { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-2); background: transparent; display: grid; place-items: center; flex: none; color: var(--ink); }
+.round svg { width: 18px; height: 18px; }
+
+main { padding-block: 4px calc(110px + env(safe-area-inset-bottom, 0px)); max-width: 620px; margin: 0 auto; display: grid; gap: 28px; }
+.page-title { font-family: var(--f-display); font-weight: 400; font-size: 40px; line-height: 1; letter-spacing: -.01em; margin: 10px 0 0; text-wrap: balance; }
+.section { display: grid; gap: 10px; min-width: 0; }
+.section-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 4px; }
+.section-h h3 { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.link { background: none; border: 0; padding: 0; color: var(--gold); font-weight: 500; font-size: 14px; }
+
+.group { background: var(--surface); border-radius: 16px; overflow: hidden; }
+.row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; position: relative; min-width: 0; }
+.group .row + .row::before { content: ""; position: absolute; top: 0; right: 0; left: 16px; height: 1px; background: var(--line); }
+.group .row.indent + .row.indent::before { left: 60px; }
+.row .grow { flex: 1; min-width: 0; }
+.row .t { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .s { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .v { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-weight: 500; letter-spacing: -.02em; text-align: right; white-space: nowrap; }
+.rank { width: 14px; font-family: var(--f-num); font-size: 12px; color: var(--muted); text-align: center; flex: none; }
+.empty { padding: 22px 16px; color: var(--muted); font-size: 14px; text-align: center; }
+
+.mono { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 13px; color: #fff; flex: none; letter-spacing: 0; }
+.tiny { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-2); background: transparent; display: grid; place-items: center; color: var(--muted); flex: none; padding: 0; }
+.tiny svg { width: 14px; height: 14px; }
+
+.btn { border-radius: 14px; padding: 14px 18px; font-weight: 600; font-size: 15px; background: var(--raised); color: var(--ink); border: 0; }
+.btn.gold { background: var(--gold); color: var(--gold-ink); }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--line-2); border-radius: 14px; font-size: 13px; color: var(--ink-2); }
+.notice .grow { flex: 1; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line-2); background: transparent; border-radius: 10px; padding: 8px 13px; font-size: 14px; font-weight: 500; color: var(--ink-2); }
+.chip[aria-pressed="true"] { background: var(--sel); color: var(--sel-ink); border-color: var(--sel); }
+.chip .x { margin-left: 6px; opacity: .55; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--raised); border-radius: 11px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; border-radius: 8px; padding: 8px 6px; font-weight: 500; font-size: 14px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label, .lbl { font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.input { width: 100%; border: 1px solid var(--line-2); background: transparent; border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* results hero */
+.hero { display: grid; gap: 4px; }
+.hero .lbl { padding-left: 2px; }
+.hero .big { font-family: var(--f-display); font-size: 68px; line-height: .95; letter-spacing: -.02em; font-variant-numeric: lining-nums tabular-nums; }
+.spark { width: 100%; height: 64px; display: block; margin-top: 10px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 6px; }
+.stats div { padding: 12px 0 12px 12px; display: grid; gap: 2px; min-width: 0; }
+.stats div:first-child { padding-left: 2px; }
+.stats div + div { border-left: 1px solid var(--line); }
+.stats b { font-family: var(--f-num); font-weight: 500; font-size: 16px; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stats span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+/* tab bar */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--bar-bg); border-top: 1px solid var(--line);
+  -webkit-backdrop-filter: saturate(140%) blur(18px); backdrop-filter: saturate(140%) blur(18px);
+  display: grid; grid-template-columns: 1fr 1fr 76px 1fr 1fr; align-items: start;
+  padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+nav.tabs button.tab { background: none; border: 0; padding: 9px 2px 9px; display: grid; justify-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--muted); letter-spacing: .02em; }
+nav.tabs button.tab svg { width: 23px; height: 23px; }
+nav.tabs button.tab[aria-current="page"] { color: var(--ink); }
+.fab { justify-self: center; margin-top: -18px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--gold); color: var(--gold-ink);
+  display: grid; place-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.35), 0 0 0 5px var(--bg); }
+.fab svg { width: 24px; height: 24px; }
+
+/* sheet */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 40; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--surface); width: 100%; max-width: 620px; border-radius: 22px 22px 0 0; max-height: 94vh; overflow-y: auto;
+  padding-block: 8px calc(18px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 18px; animation: up .24s cubic-bezier(.2,.8,.2,1); }
+.sheet .grab { width: 36px; height: 5px; border-radius: 3px; background: var(--line-2); justify-self: center; }
+.sheet-h { display: flex; align-items: center; gap: 12px; }
+.sheet-h h2 { flex: 1; margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1; }
+@keyframes up { from { transform: translateY(40px); opacity: .5; } to { transform: none; opacity: 1; } }
+
+.amounts { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; }
+.amt { background: transparent; border: 0; padding: 14px 16px 12px; text-align: left; display: grid; gap: 4px; position: relative; }
+.amt + .amt { border-left: 1px solid var(--line-2); }
+.amt::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: 0; height: 2px; background: transparent; }
+.amt[aria-pressed="true"]::after { background: var(--gold); }
+.amt span { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.amt b { font-family: var(--f-num); font-size: 28px; font-weight: 400; letter-spacing: -.03em; }
+.amt[aria-pressed="true"] span { color: var(--gold); }
+.quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.quick button { border: 1px solid var(--line-2); background: transparent; border-radius: 999px; padding: 9px 0; font-family: var(--f-num); font-size: 14px; color: var(--ink-2); }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.keypad button { border: 0; background: transparent; border-radius: 14px; padding: 13px 0; font-family: var(--f-body); font-size: 26px; font-weight: 300; display: grid; place-items: center; }
+.keypad button:active { background: var(--raised); }
+.netline { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); padding-top: 14px; }
+.netline b { font-family: var(--f-display); font-size: 34px; font-weight: 400; line-height: 1; }
+
+/* roulette */
+.wheel-wrap { position: relative; width: min(100%, 330px); aspect-ratio: 1; max-width: 100%; justify-self: center; margin-top: 8px; }
+.wheel-wrap canvas { width: 100%; height: 100%; display: block; }
+.pointer { position: absolute; left: 50%; top: -10px; transform: translateX(-50%); width: 18px; height: 26px; }
+.result { text-align: center; display: grid; gap: 6px; padding-top: 4px; }
+.result .who { font-family: var(--f-display); font-size: 54px; line-height: 1; }
+.controls { display: grid; gap: 14px; }
+
+/* split */
+.transfer { display: flex; align-items: center; gap: 10px; }
+.transfer .arrow { color: var(--muted); width: 16px; height: 16px; flex: none; }
+.room-head { display: grid; gap: 2px; padding: 16px 16px 12px; }
+.room-head .t { font-weight: 600; }
+.room-total { font-family: var(--f-display); font-size: 30px; line-height: 1; }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper b { min-width: 20px; text-align: center; font-family: var(--f-num); font-weight: 500; }
+.toggle-name { background: none; border: 0; padding: 0; display: flex; align-items: center; gap: 10px; text-align: left; min-width: 0; flex: 1; }
+.check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-2); display: grid; place-items: center; flex: none; }
+.check.on { background: var(--sel); border-color: var(--sel); color: var(--sel-ink); }
+.check svg { width: 12px; height: 12px; }
+
+/* town */
+.city-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
+.city-scroll::-webkit-scrollbar { display: none; }
+.city-scroll .chip { white-space: nowrap; }
+.wx { background: var(--surface); border-radius: 16px; padding: 18px 16px 6px; display: grid; gap: 14px; }
+.wx-now { display: flex; align-items: flex-end; gap: 14px; }
+.wx-now .temp { font-family: var(--f-display); font-size: 76px; line-height: .85; letter-spacing: -.03em; }
+.wx-now .ico { width: 34px; height: 34px; color: var(--gold); margin-bottom: 6px; }
+.wx-days { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+.wx-day { padding: 12px 4px; text-align: center; display: grid; justify-items: center; gap: 4px; font-size: 13px; }
+.wx-day + .wx-day { border-left: 1px solid var(--line); }
+.wx-day svg { width: 20px; height: 20px; color: var(--ink-2); }
+.tagline { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+
+.switch { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; padding-bottom: 12px; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 44px; height: 26px; border-radius: 999px; background: var(--raised); border: 1px solid var(--line-2); position: relative; flex: none; transition: background .15s; }
+.switch .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--ink-2); transition: transform .15s; }
+.switch input:checked + .track { background: var(--gold); border-color: var(--gold); }
+.switch input:checked + .track .knob { transform: translateX(18px); background: var(--gold-ink); }
+.switch input:focus-visible + .track { outline: 2px solid var(--gold); outline-offset: 2px; }
+.seg button { min-width: 0; }
+input[type="date"] { min-height: 46px; }
+.sync { font-size: 10px; letter-spacing: .12em; }
+.sync[data-state="live"] { color: var(--win); }
+.sync[data-state="offline"] { color: var(--loss); }
+.sync:not(:empty)::before { content: "· "; color: var(--muted); }
+.banks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.bank { background: var(--surface); border: 0; border-radius: 16px; padding: 16px 12px 14px; display: grid; justify-items: center; gap: 4px; text-align: center; min-width: 0; }
+.bank .t { font-weight: 600; margin-top: 4px; }
+.bank .s { font-size: 12px; color: var(--muted); }
+.empty-bank { border: 1px dashed var(--line-2); background: transparent; align-content: center; min-height: 150px; gap: 8px; }
+.donut-wrap { position: relative; width: 104px; height: 104px; }
+.donut { width: 100%; height: 100%; display: block; }
+.donut-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; }
+.donut-center b { font-family: var(--f-display); font-size: 24px; font-weight: 400; }
+.donut-center span { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.legend { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+.legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 6px; }
+.day-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
+.day-scroll::-webkit-scrollbar { display: none; }
+.daychip { display: grid; justify-items: center; gap: 0; padding: 6px 12px; min-width: 52px; }
+.daychip span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
+.daychip b { font-size: 17px; font-weight: 600; }
+/* wallet */
+.card-art { aspect-ratio: 1.586; max-width: 100%; border-radius: 18px; padding: 20px; display: grid; align-content: space-between; position: relative; overflow: hidden;
+  background: radial-gradient(120% 90% at 0% 0%, #34373d 0%, #1b1d21 55%, #121316 100%); color: #f3f1ec; box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+.card-art::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px); pointer-events: none; }
+.card-art > * { position: relative; z-index: 1; }
+.card-art .brand { font-family: var(--f-display); font-size: 22px; font-style: italic; color: #d9b874; }
+.card-art .bal { font-family: var(--f-display); font-size: 44px; line-height: 1; }
+.card-art .meta { display: flex; justify-content: space-between; align-items: end; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #a6a39c; }
+.card-art .emv { width: 38px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #d9b874, #9c7a36); opacity: .9; }
+.soon { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 50;
+  background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 500; font-size: 14px; white-space: nowrap;
+  display: flex; align-items: center; gap: 14px; }
+.toast-undo { background: none; border: 0; padding: 0; color: var(--gold); font-weight: 600; font-size: 14px; }
+.toast { z-index: 60; }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+</style>
+
+<header class="top gutter" id="topbar">
+  <button class="trip" id="cityBtn" type="button" aria-label="Change city">
+    <span class="eyebrow"><span id="tripName">Trip</span> <span id="syncDot" class="sync"></span></span>
+    <span class="where"><span id="cityName">Atlantic City</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6l4 4 4-4"/></svg></span>
+  </button>
+  <button class="stack" id="crewBtn" type="button" aria-label="Crew"></button>
+  <button class="round" id="walletBtn" type="button" aria-label="Wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16 14.5h2"/></svg></button>
+</header>
+
+<main id="view" class="gutter"></main>
+
+<nav class="tabs" id="tabs" aria-label="Sections">
+  <button type="button" class="tab" data-tab="results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V11M10 19V5M16 19v-6M3 19h18"/></svg>Results</button>
+  <button type="button" class="tab" data-tab="roulette"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5v6M12 14.5v6M3.5 12h6M14.5 12h6"/></svg>Roulette</button>
+  <button type="button" class="fab" id="fab" aria-label="Add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button type="button" class="tab" data-tab="split"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>Split</button>
+  <button type="button" class="tab" data-tab="town"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="10" r="3.5"/><path d="M12 3v1.5M12 15.5V17M5 10H3.5M20.5 10H19M7 5l1 1M17 5l-1 1M4 21h16"/></svg>Town</button>
+</nav>
+
+<div id="sheetRoot"></div>
+
+<script>
+(function () {
+"use strict";
+
+/* ---------- data ---------- */
+const CITIES = {
+  ac: { name: "Atlantic City", region: "New Jersey", lat: 39.3643, lon: -74.4229,
+    casinos: ["Borgata", "Hard Rock", "Ocean Casino Resort", "Caesars", "Harrah's", "Tropicana", "Bally's", "Resorts", "Golden Nugget"],
+    updates: [
+      { tag: "Event", t: "Boardwalk fireworks Friday at 9:30 pm, best view from Steel Pier." },
+      { tag: "Traffic", t: "Expressway into AC backs up 3 to 6 pm Fridays. Leave before 2 or after 7." },
+      { tag: "Poker", t: "Poker rooms run bad beat jackpots on weekends. Ask the floor for current totals." },
+      { tag: "Beach", t: "Beach tags aren't required in Atlantic City. Lifeguards on duty 10 am to 5 pm in season." }
+    ] },
+  ct: { name: "Charles Town", region: "West Virginia", lat: 39.2890, lon: -77.8597,
+    casinos: ["Hollywood Casino at Charles Town Races"],
+    updates: [
+      { tag: "Racing", t: "Live thoroughbred racing most Wednesday to Saturday nights. Post time around 7 pm." },
+      { tag: "Traffic", t: "Route 9 is the main way in from Virginia and Maryland. Expect slowdowns on race nights." },
+      { tag: "Rewards", t: "Sign up at the rewards desk on your first visit for free play offers." }
+    ] },
+  nh: { name: "National Harbor", region: "Maryland", lat: 38.7826, lon: -77.0166,
+    casinos: ["MGM National Harbor", "Live! Casino Maryland", "Horseshoe Baltimore"],
+    updates: [
+      { tag: "Event", t: "The Capital Wheel runs nightly on the waterfront. Lines are shortest before sunset." },
+      { tag: "Traffic", t: "Wilson Bridge backups on the Beltway can add 20+ minutes on weeknights." },
+      { tag: "Parking", t: "MGM self-parking fills on weekend nights. Arrive before 8 or use valet." }
+    ] },
+  lv: { name: "Las Vegas", region: "Nevada", lat: 36.1147, lon: -115.1728,
+    casinos: ["Bellagio", "Caesars Palace", "Wynn", "Encore", "Venetian", "MGM Grand", "Aria", "Cosmopolitan", "Resorts World", "Fontainebleau", "Circa", "Golden Nugget"],
+    updates: [
+      { tag: "Heat", t: "Desert heat peaks 2 to 5 pm. Drink water between casinos on the Strip." },
+      { tag: "Traffic", t: "Strip traffic crawls on weekend nights. The monorail runs along the east side." },
+      { tag: "Event", t: "Bellagio fountain shows every 15 minutes in the evening, every 30 in the afternoon." },
+      { tag: "Downtown", t: "Fremont Street light canopy shows run hourly after dusk." }
+    ] }
+};
+const GAMES = ["Blackjack", "Slots", "Craps", "Roulette", "Poker", "Baccarat", "Sports", "Other"];
+const EXP_QUICK = ["Dinner", "Drinks", "Uber", "Show", "Tips", "Parking", "Breakfast", "Gas"];
+
+/* ---------- utils ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const r2 = n => Math.round(n * 100) / 100;
+function money(n) {
+  const a = Math.abs(r2(n));
+  const s = a.toLocaleString("en-US", { minimumFractionDigits: a % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  return (n < -0.004 ? "−$" : "$") + s;
+}
+const signed = n => (n > 0.004 ? "+" : "") + money(n);
+const cls = n => n > 0.004 ? "win" : n < -0.004 ? "loss" : "";
+function rand(n) {
+  if (window.crypto && crypto.getRandomValues) {
+    const max = Math.floor(0xffffffff / n) * n, a = new Uint32Array(1);
+    do { crypto.getRandomValues(a); } while (a[0] >= max);
+    return a[0] % n;
+  }
+  return Math.floor(Math.random() * n);
+}
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const timeAgo = ts => { const m = Math.round((Date.now() - ts) / 60000); return m < 1 ? "just now" : m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago"; };
+const I = {
+  x: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+  plus: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v10M3 8h10"/></svg>',
+  minus: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10"/></svg>',
+  check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 8.5l3 3 7-7"/></svg>',
+  arrow: '<svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h11M9 4l4 4-4 4"/></svg>',
+  back: '<svg style="width:22px;height:22px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12 9l5 6M17 9l-5 6"/></svg>'
+};
+
+/* ---------- state ---------- */
+const KEY = "housemoney.v1";
+function example() {
+  const p = ["Mike", "Dana", "Chris", "Jess"].map(name => ({ id: uid(), name }));
+  const [m, d, c, j] = p.map(x => x.id), now = Date.now();
+  return {
+    example: true, city: "ac", tab: "results", tripName: "AC weekend", people: p,
+    sessions: [
+      { id: uid(), personId: m, game: "Blackjack", casino: "Borgata", buyIn: 100, cashOut: 260, ts: now - 1.4e7 },
+      { id: uid(), personId: j, game: "Poker", casino: "Borgata", buyIn: 200, cashOut: 120, ts: now - 1.1e7 },
+      { id: uid(), personId: c, game: "Slots", casino: "Ocean Casino Resort", buyIn: 100, cashOut: 145, ts: now - 8e6 },
+      { id: uid(), personId: m, game: "Craps", casino: "Hard Rock", buyIn: 200, cashOut: 0, ts: now - 6e6 },
+      { id: uid(), personId: d, game: "Blackjack", casino: "Borgata", buyIn: 300, cashOut: 640, ts: now - 3.2e6 }
+    ],
+    rooms: [{ id: uid(), name: "Borgata king room", nightly: 289, nights: 2, tax: 18, paidBy: d,
+      guests: [{ personId: m, nights: 2 }, { personId: d, nights: 2 }] },
+      { id: uid(), name: "Borgata double queen", nightly: 259, nights: 2, tax: 18, paidBy: c,
+      guests: [{ personId: c, nights: 2 }, { personId: j, nights: 1 }] }],
+    expenses: [
+      { id: uid(), desc: "Dinner", amount: 312.5, paidBy: m, among: [m, d, c, j] },
+      { id: uid(), desc: "Uber", amount: 46, paidBy: j, among: [m, d, c, j] }
+    ],
+    roulette: { mode: "crew", rule: "one", inIds: [m, d, c, j], quick: ["Alex", "Sam", "Taylor"], bill: "", what: "", history: [] },
+    weather: {}
+  };
+}
+function blank(city) {
+  return { example: false, city: city || "ac", tab: "results", tripName: "My trip", people: [], sessions: [], rooms: [], expenses: [],
+    roulette: { mode: "crew", rule: "one", inIds: [], quick: [], bill: "", what: "", history: [] }, weather: {} };
+}
+/* Shared editing. Paste your Firebase Realtime Database URL here to let anyone with a trip link edit it.
+   Leave it empty and everything stays on each phone. Setup steps are in README.md. */
+const SYNC_URL = "";
+const tripFromHash = () => (location.hash.match(/^#t([a-z0-9]{8,32})$/) || [])[1] || null;
+let tripId = SYNC_URL ? tripFromHash() : null;
+const storeKey = () => tripId ? KEY + ":" + tripId : KEY;
+let S;
+try { S = JSON.parse(localStorage.getItem(storeKey())); } catch (e) { S = null; }
+if (!S || !S.people) S = tripId ? blank("ac") : example();
+S.budgets = S.budgets || {};
+function save() {
+  try { localStorage.setItem(storeKey(), JSON.stringify(S)); } catch (e) { /* storage blocked: keep in memory */ }
+  queuePush();
+}
+
+/* ---------- sync ---------- */
+let synced = null, syncState = "local", pushTimer = null, pullTimer = null, es = null, pendingRender = false, inflight = false, pullWanted = false, localVer = 0;
+const byId = list => { const o = {}; list.forEach(x => { o[x.id] = x; }); return o; };
+function toRemote() {
+  const o = {};
+  o["meta"] = { tripName: S.tripName || "", city: S.city, trip: S.trip || null };
+  S.people.forEach((p, i) => { o["people/" + p.id] = { name: p.name, o: i }; });
+  S.sessions.forEach(x => { o["sessions/" + x.id] = x; });
+  S.rooms.forEach((x, i) => { o["rooms/" + x.id] = Object.assign({}, x, { o: i }); });
+  S.expenses.forEach((x, i) => { o["expenses/" + x.id] = Object.assign({}, x, { o: i }); });
+  Object.entries(S.budgets || {}).forEach(([k, v]) => { if (v) o["budgets/" + k] = v; });
+  S.roulette.history.forEach(h => { if (!h.id) h.id = uid(); o["rhist/" + h.id] = h; });
+  return o;
+}
+function fromRemote(d) {
+  const ent = x => Object.entries(x || {}).map(([id, v]) => Object.assign({}, v, { id }));
+  const ord = (a, b) => (a.o ?? 0) - (b.o ?? 0);
+  const oldIds = S.people.map(p => p.id);
+  if (d.meta) { S.tripName = d.meta.tripName; S.city = d.meta.city || S.city; if (d.meta.trip) S.trip = d.meta.trip; }
+  S.people = ent(d.people).sort(ord).map(p => ({ id: p.id, name: p.name }));
+  S.sessions = ent(d.sessions);
+  S.rooms = ent(d.rooms).sort(ord).map(r => { delete r.o; r.guests = r.guests || []; return r; });
+  S.expenses = ent(d.expenses).sort(ord).map(x => { delete x.o; x.among = x.among || []; return x; });
+  S.budgets = d.budgets || {};
+  S.roulette.history = ent(d.rhist).sort((a, b) => a.ts - b.ts);
+  const ids = S.people.map(p => p.id);
+  S.roulette.inIds = S.roulette.inIds.filter(id => ids.includes(id)).concat(ids.filter(id => !oldIds.includes(id) && !S.roulette.inIds.includes(id)));
+  S.example = false;
+}
+const syncOn = () => !!(SYNC_URL && tripId);
+const tripUrl = () => `${SYNC_URL.replace(/\/$/, "")}/trips/${tripId}.json`;
+function setSync(st) { syncState = st; const el = $("#syncDot"); if (el) { el.dataset.state = st; el.textContent = st === "live" ? "Shared" : st === "offline" ? "Offline" : ""; } }
+function queuePush() { localVer++; if (!syncOn() || !synced) return; clearTimeout(pushTimer); pushTimer = setTimeout(push, 250); }
+function push() {
+  pushTimer = null;
+  const cur = toRemote(), body = {};
+  Object.keys(cur).forEach(k => { if (JSON.stringify(cur[k]) !== JSON.stringify(synced[k])) body[k] = cur[k]; });
+  Object.keys(synced).forEach(k => { if (!(k in cur)) body[k] = null; });
+  if (!Object.keys(body).length) return;
+  synced = cur; inflight = true;
+  fetch(tripUrl(), { method: "PATCH", body: JSON.stringify(body) })
+    .then(r => { if (!r.ok) throw new Error(r.status); setSync("live"); })
+    .catch(() => { setSync("offline"); synced = {}; })
+    .finally(() => { inflight = false; if (pullWanted && !pushTimer) { pullWanted = false; pull(); } });
+}
+function pull() {
+  if (pushTimer || inflight) { pullWanted = true; return; }
+  const ver = localVer;
+  return fetch(tripUrl()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
+    if (ver !== localVer || pushTimer || inflight) { pullWanted = true; if (!pushTimer && !inflight) setTimeout(pull, 100); return; }
+    if (d) { fromRemote(d); synced = toRemote(); } else { synced = {}; push(); }
+    try { localStorage.setItem(storeKey(), JSON.stringify(S)); } catch (e) {}
+    setSync("live"); safeRender();
+  }).catch(() => setSync("offline"));
+}
+function safeRender() {
+  const a = document.activeElement;
+  if (a && view.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) { pendingRender = true; return; }
+  if (!spinning) render();
+}
+function startSync() {
+  if (!syncOn()) return;
+  pull();
+  try {
+    if (es) es.close();
+    es = new EventSource(tripUrl());
+    const onEvt = () => { clearTimeout(pullTimer); pullTimer = setTimeout(pull, 250); };
+    es.addEventListener("put", onEvt); es.addEventListener("patch", onEvt);
+    es.onerror = () => setSync("offline");
+  } catch (e) { /* no live updates; edits still save */ }
+}
+function newSharedTrip() {
+  if (!SYNC_URL) return;
+  tripId = (uid() + uid()).replace(/[^a-z0-9]/g, "").slice(0, 14);
+  history.replaceState(null, "", "#t" + tripId);
+  synced = {}; push(); startSync();
+}
+const shareLink = () => location.href.split("#")[0] + "#t" + tripId;
+window.addEventListener("hashchange", () => { if (SYNC_URL && tripFromHash() !== tripId) location.reload(); });
+document.addEventListener("focusout", () => { if (pendingRender) setTimeout(() => { if (pendingRender) { pendingRender = false; safeRender(); } }, 50); });
+const person = id => S.people.find(p => p.id === id);
+const pname = id => (person(id) || { name: "Someone" }).name;
+const pidx = id => Math.max(0, S.people.findIndex(p => p.id === id));
+const avColor = i => css("--av-" + ((i % 6) + 1));
+const mono = id => `<span class="mono" style="background:${avColor(pidx(id))}">${esc((pname(id)[0] || "?").toUpperCase())}</span>`;
+const city = () => CITIES[S.city] || CITIES.ac;
+
+/* ---------- shell ---------- */
+const view = $("#view");
+function setTab(t) { S.tab = t; save(); render(); window.scrollTo(0, 0); }
+$("#tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) setTab(b.dataset.tab); });
+$("#cityBtn").addEventListener("click", openCitySheet);
+$("#crewBtn").addEventListener("click", openCrewSheet);
+$("#walletBtn").addEventListener("click", () => setTab("wallet"));
+$("#fab").addEventListener("click", () => {
+  if (!S.people.length && !(S.tab === "roulette" && S.roulette.mode === "quick")) return openCrewSheet();
+  if (S.tab === "split") return openExpenseSheet();
+  if (S.tab === "roulette") return spin();
+  openSessionSheet();
+});
+window.addEventListener("scroll", () => $("#topbar").classList.toggle("scrolled", window.scrollY > 4), { passive: true });
+if (window.matchMedia) { try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => render()); } catch (e) {} }
+
+const TITLES = { results: "Results", roulette: "Card roulette", split: "Split the trip", wallet: "Wallet" };
+function render() {
+  document.querySelectorAll("#tabs [data-tab]").forEach(b => b.setAttribute("aria-current", b.dataset.tab === S.tab ? "page" : "false"));
+  $("#cityName").textContent = city().name;
+  $("#tripName").textContent = S.tripName || "Trip";
+  setSync(syncState);
+  $("#crewBtn").innerHTML = S.people.length ? S.people.slice(0, 4).map(p => mono(p.id)).join("") : `<span class="round">${I.plus}</span>`;
+  $("#fab").setAttribute("aria-label", S.tab === "split" ? "Add a bill" : S.tab === "roulette" ? "Spin" : "Log a session");
+  const notice = S.example ? `<div class="notice"><div class="grow">You're looking at an example trip.</div><button class="link" data-act="fresh">Start my trip</button></div>` : "";
+  const fn = { results: vResults, roulette: vRoulette, split: vSplit, town: vTown, wallet: vWallet }[S.tab] || vResults;
+  const title = S.tab === "town" ? city().name : TITLES[S.tab] || "Results";
+  view.innerHTML = `<h1 class="page-title">${esc(title)}</h1>` + notice + fn();
+  if (S.tab === "roulette") drawWheel();
+  if (S.tab === "town") loadWeather();
+}
+view.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id;
+  const acts = {
+    fresh: () => openFreshSheet(),
+    logSession: () => openSessionSheet(id),
+    delSession: () => { S.sessions = S.sessions.filter(s => s.id !== id); save(); render(); toast("Session removed"); },
+    crew: openCrewSheet,
+    rMode: () => { S.roulette.mode = b.dataset.v; resetSpin(); },
+    rRule: () => { S.roulette.rule = b.dataset.v; resetSpin(); },
+    rToggle: () => { const r = S.roulette; r.inIds = r.inIds.includes(id) ? r.inIds.filter(x => x !== id) : r.inIds.concat(id); resetSpin(); },
+    rDelQuick: () => { S.roulette.quick.splice(+b.dataset.i, 1); resetSpin(); },
+    rAddQuick: addQuickName,
+    spin: spin,
+    rReset: resetSpin,
+    rLog: logRoulette,
+    budget: () => openBudgetSheet(id),
+    addRoom: () => openRoomSheet(),
+    delRoom: () => { S.rooms = S.rooms.filter(r => r.id !== id); save(); render(); },
+    guestToggle: () => { const r = S.rooms.find(x => x.id === id), pid = b.dataset.p; const g = r.guests.find(x => x.personId === pid);
+      r.guests = g ? r.guests.filter(x => x !== g) : r.guests.concat({ personId: pid, nights: r.nights }); save(); render(); },
+    gStep: () => { const r = S.rooms.find(x => x.id === id), g = r.guests.find(x => x.personId === b.dataset.p);
+      g.nights = Math.max(1, Math.min(r.nights, g.nights + (+b.dataset.d))); save(); render(); },
+    addExp: () => openExpenseSheet(),
+    delExp: () => { S.expenses = S.expenses.filter(x => x.id !== id); save(); render(); },
+    copySettle: copySettle,
+    city: () => { S.city = b.dataset.v; save(); render(); },
+    townView: () => { S.townView = b.dataset.v; save(); render(); },
+    pokerDate: () => { S.pokerDate = b.dataset.v; render(); },
+    home: () => { tripState().home = b.dataset.v; save(); render(); }
+  };
+  if (acts[a]) acts[a]();
+});
+view.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "quickName") { e.preventDefault(); addQuickName(); } });
+view.addEventListener("change", e => {
+  const id = e.target.id; if (!["tIn", "tOut", "tDirect"].includes(id)) return;
+  const t = tripState();
+  if (id === "tDirect") t.direct = e.target.checked;
+  else if (e.target.value) {
+    t[id === "tIn" ? "in" : "out"] = e.target.value;
+    if (t.out <= t.in) { const d = parseYmd(t.in); d.setDate(d.getDate() + 1); t.out = ymd(d); }
+  }
+  save(); render();
+});
+view.addEventListener("input", e => {
+  if (e.target.id === "tHome") {
+    const v = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3); tripState().home = v; save();
+    if (v.length === 3 || v.length === 0) { render(); const i = $("#tHome"); if (i) { i.focus(); i.setSelectionRange(v.length, v.length); } }
+  }
+  if (e.target.id === "billAmt") { S.roulette.bill = e.target.value; save(); }
+  if (e.target.id === "billWhat") { S.roulette.what = e.target.value; save(); }
+});
+
+function toast(msg, undo) {
+  document.querySelectorAll(".toast").forEach(x => x.remove());
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
+  if (undo) {
+    const u = document.createElement("button"); u.type = "button"; u.textContent = "Undo"; u.className = "toast-undo";
+    u.onclick = () => { t.remove(); undo(); }; t.appendChild(u);
+  }
+  setTimeout(() => t.remove(), undo ? 5000 : 1800);
+}
+
+/* ---------- sheet helper ---------- */
+function openSheet(html, onMount) {
+  const root = $("#sheetRoot");
+  root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
+  const scrim = $("#scrim");
+  scrim.addEventListener("click", e => { if (e.target === scrim) closeSheet(); });
+  if (onMount) onMount(scrim.firstElementChild);
+}
+function closeSheet() { $("#sheetRoot").innerHTML = ""; }
+const sheetHead = t => `<div class="grab"></div><div class="sheet-h"><h2>${t}</h2><button class="round" data-k="close" aria-label="Close">${I.x}</button></div>`;
+const chipsHTML = (items, sel, attr) => items.map(it => `<button type="button" class="chip" data-${attr}="${esc(it.v)}" aria-pressed="${sel.includes(it.v)}">${esc(it.l)}</button>`).join("");
+
+
+/* ---------- budgets ---------- */
+function shareRow() {
+  if (!SYNC_URL) return `<div class="small muted">Shared editing is off in this copy. Once the app is on GitHub with a database connected, anyone with the trip link can add entries.</div>`;
+  if (!tripId) return `<button class="btn block" data-k="makeShared">Make this trip shared</button>`;
+  return `<div class="field"><span class="lbl">Share this trip</span><div style="display:flex;gap:8px;align-items:center"><div class="input num small" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;user-select:all">${esc(shareLink())}</div><button class="btn" data-k="share">Copy</button></div>
+    <div class="small muted">Anyone with this link can see and edit the trip.</div></div>`;
+}
+function copyText(text, msg) {
+  try { navigator.clipboard.writeText(text).then(() => toast(msg), () => fallbackCopy(text)); } catch (e) { fallbackCopy(text); }
+}
+function donut(budget, net) {
+  const R = 42, C = 2 * Math.PI * R;
+  const lost = Math.min(budget, Math.max(0, -net)), won = Math.max(0, net), left = budget - lost, total = budget + won;
+  const over = net < -budget;
+  const segs = over ? [[1, "var(--loss)"]] : [[won / total, "var(--win)"], [left / total, "var(--gold)"], [lost / total, "var(--loss)"]];
+  let off = 0;
+  const arcs = segs.filter(x => x[0] > 0.0005).map(([f, col], i, arr) => {
+    const gap = arr.length > 1 ? 2.5 : 0, len = Math.max(0, f * C - gap);
+    const el = `<circle r="${R}" cx="50" cy="50" fill="none" stroke="${col}" stroke-width="9" stroke-dasharray="${len.toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" ${col === "var(--loss)" && !over ? 'stroke-opacity=".55"' : ""}/>`;
+    off += f * C; return el;
+  }).join("");
+  return `<svg viewBox="0 0 100 100" class="donut" aria-hidden="true"><g transform="rotate(-90 50 50)"><circle r="${R}" cx="50" cy="50" fill="none" stroke="var(--line)" stroke-width="9"/>${arcs}</g></svg>`;
+}
+function vBudgets(t) {
+  if (!S.people.length) return "";
+  const cards = S.people.map(p => {
+    const b = +(S.budgets || {})[p.id] || 0, net = t[p.id].net;
+    if (!b) return `<button type="button" class="bank empty-bank" data-act="budget" data-id="${p.id}">${mono(p.id)}<span class="t">${esc(p.name)}</span><span class="link small">Set budget</span></button>`;
+    const now = b + net, over = net < -b;
+    return `<button type="button" class="bank" data-act="budget" data-id="${p.id}" aria-label="${esc(p.name)} budget">
+      <div class="donut-wrap">${donut(b, net)}<div class="donut-center"><b class="${over ? "loss" : ""}">${over ? money(-(now)) : money(now)}</b><span>${over ? "over" : "left"}</span></div></div>
+      <div class="t">${esc(p.name)}</div>
+      <div class="s">${money(b)} budget · <span class="${cls(net)}">${net > 0.004 ? "up " + money(net) : net < -0.004 ? "down " + money(-net) : "even"}</span></div></button>`;
+  }).join("");
+  return `<section class="section"><div class="section-h"><h3>Bankrolls</h3><span class="small muted legend"><i style="background:var(--gold)"></i>Left <i style="background:var(--win)"></i>Won <i style="background:var(--loss);opacity:.55"></i>Lost</span></div><div class="banks">${cards}</div></section>`;
+}
+function openBudgetSheet(pid) {
+  let v = String((S.budgets || {})[pid] || "");
+  const draw = el => {
+    el.innerHTML = sheetHead(esc(pname(pid)) + "'s budget") + `
+      <div class="small muted">How much ${esc(pname(pid))} is willing to gamble this trip. The chart grows if they win.</div>
+      <div class="field"><label for="bAmt">Budget</label><input id="bAmt" class="input num" inputmode="decimal" placeholder="$0" value="${esc(v)}" style="font-size:24px"></div>
+      <div class="quick">${[200, 500, 1000, 2000].map(n => `<button type="button" data-set="${n}">$${n.toLocaleString()}</button>`).join("")}</div>
+      <div class="btn-row"><button class="btn" data-k="clear">No budget</button><button class="btn gold" data-k="save">Save budget</button></div>`;
+  };
+  openSheet("", el => {
+    draw(el);
+    el.addEventListener("input", e => { if (e.target.id === "bAmt") v = e.target.value; });
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.k === "close") return closeSheet();
+      if (b.dataset.set) { v = b.dataset.set; draw(el); return; }
+      if (b.dataset.k === "clear") { delete S.budgets[pid]; save(); closeSheet(); render(); return; }
+      if (b.dataset.k === "save") {
+        const n = r2(+v); if (!(n > 0)) { toast("Enter a budget amount"); return; }
+        S.budgets[pid] = n; save(); closeSheet(); render(); toast("Budget saved");
+      }
+    });
+  });
+}
+
+/* ---------- RESULTS ---------- */
+function totals() {
+  const t = {}; S.people.forEach(p => t[p.id] = { net: 0, n: 0, in: 0, games: {} });
+  S.sessions.forEach(s => { const x = t[s.personId]; if (x) { x.net += s.cashOut - s.buyIn; x.n++; x.in += s.buyIn; x.games[s.game] = (x.games[s.game] || 0) + 1; } });
+  return t;
+}
+function sparkline() {
+  const ss = S.sessions.slice().sort((a, b) => a.ts - b.ts);
+  if (ss.length < 2) return "";
+  let acc = 0; const pts = [0].concat(ss.map(s => (acc += s.cashOut - s.buyIn)));
+  const W = 600, H = 64, pad = 5, min = Math.min(0, ...pts), max = Math.max(0, ...pts), span = max - min || 1;
+  const x = i => pad + i * (W - pad * 2) / (pts.length - 1), y = v => pad + (max - v) * (H - pad * 2) / span;
+  const line = pts.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
+  const last = pts[pts.length - 1], col = last >= 0 ? "var(--win)" : "var(--loss)";
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Crew net over the trip">
+    <defs><linearGradient id="sg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".22"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    <line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line-2)" stroke-dasharray="3 5" vector-effect="non-scaling-stroke"/>
+    <path d="${line} L${x(pts.length - 1)} ${H} L${x(0)} ${H} Z" fill="url(#sg)"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+function vResults() {
+  const t = totals(), people = S.people.slice().sort((a, b) => t[b.id].net - t[a.id].net);
+  const group = Object.values(t).reduce((a, x) => a + x.net, 0), action = Object.values(t).reduce((a, x) => a + x.in, 0);
+  const best = people.length && S.sessions.length ? people[0] : null;
+  const board = people.length ? people.map((p, i) => {
+    const x = t[p.id], top = Object.entries(x.games).sort((a, b) => b[1] - a[1])[0];
+    return `<div class="row indent"><span class="rank">${i + 1}</span>${mono(p.id)}
+      <div class="grow"><div class="t">${esc(p.name)}</div><div class="s">${x.n ? `${x.n} session${x.n === 1 ? "" : "s"} · ${esc(top[0])}` : "No sessions yet"}</div></div>
+      <div class="v ${cls(x.net)}">${signed(x.net)}</div>
+      <button class="tiny" data-act="logSession" data-id="${p.id}" aria-label="Log a session for ${esc(p.name)}">${I.plus}</button></div>`; }).join("")
+    : `<div class="empty">Add your crew to start tracking.<div style="margin-top:12px"><button class="btn gold" data-act="crew">Add crew</button></div></div>`;
+  const recent = S.sessions.slice().sort((a, b) => b.ts - a.ts).slice(0, 25).map(s => {
+    const net = s.cashOut - s.buyIn;
+    return `<div class="row indent">${mono(s.personId)}
+      <div class="grow"><div class="t">${esc(pname(s.personId))} <span class="muted" style="font-weight:400">· ${esc(s.game)}</span></div>
+      <div class="s">${esc(s.casino || city().name)} · <span class="num">${money(s.buyIn)} → ${money(s.cashOut)}</span> · ${timeAgo(s.ts)}</div></div>
+      <div class="v ${cls(net)}">${signed(net)}</div>
+      <button class="tiny" data-act="delSession" data-id="${s.id}" aria-label="Remove session">${I.x}</button></div>`;
+  }).join("");
+  return `
+  <section class="hero">
+    <div class="lbl">Crew net</div>
+    <div class="big ${cls(group)}">${signed(group)}</div>
+    ${sparkline()}
+    <div class="stats">
+      <div><span>Bought in</span><b>${money(action)}</b></div>
+      <div><span>Sessions</span><b>${S.sessions.length}</b></div>
+      <div><span>Hot hand</span><b>${best ? esc(best.name) : "None yet"}</b></div>
+    </div>
+  </section>
+  ${vBudgets(t)}
+  <section class="section"><div class="section-h"><h3>Leaderboard</h3>${S.people.length ? `<button class="link" data-act="crew">Edit crew</button>` : ""}</div><div class="group">${board}</div></section>
+  <section class="section"><div class="section-h"><h3>Sessions</h3></div><div class="group">${recent || `<div class="empty">Tap the gold button to log your first session.</div>`}</div></section>`;
+}
+
+function openSessionSheet(personId) {
+  if (!S.people.length) { openCrewSheet(); return; }
+  const st = { who: personId || S.people[0].id, game: "Blackjack", casino: city().casinos[0], field: "buyIn", buyIn: "", cashOut: "" };
+  const draw = el => {
+    const bi = +st.buyIn || 0, co = +st.cashOut || 0, net = co - bi;
+    el.innerHTML = sheetHead("Log a session") + `
+      <div class="field"><span class="lbl">Who</span><div class="chips">${chipsHTML(S.people.map(p => ({ v: p.id, l: p.name })), [st.who], "who")}</div></div>
+      <div class="field"><span class="lbl">Game</span><div class="chips">${chipsHTML(GAMES.map(g => ({ v: g, l: g })), [st.game], "game")}</div></div>
+      <div class="field"><label for="casinoSel">Casino</label><select id="casinoSel" class="input">${city().casinos.map(c => `<option ${c === st.casino ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></div>
+      <div class="amounts">
+        <button type="button" class="amt" data-field="buyIn" aria-pressed="${st.field === "buyIn"}"><span>Bought in</span><b>$${esc(st.buyIn || "0")}</b></button>
+        <button type="button" class="amt" data-field="cashOut" aria-pressed="${st.field === "cashOut"}"><span>Cashed out</span><b>$${esc(st.cashOut || "0")}</b></button>
+      </div>
+      <div class="quick">${[20, 50, 100, 500].map(v => `<button type="button" data-add="${v}">+${v}</button>`).join("")}</div>
+      <div class="keypad">${["1","2","3","4","5","6","7","8","9",".","0","del"].map(k => `<button type="button" data-key="${k}" aria-label="${k === "del" ? "Delete" : k}">${k === "del" ? I.back : k}</button>`).join("")}</div>
+      <div class="netline"><span class="lbl">Net</span><b class="${cls(net)}">${signed(net)}</b></div>
+      <div class="btn-row"><button class="btn" data-k="busted">Busted</button><button class="btn gold" data-k="save">Save session</button></div>`;
+  };
+  openSheet("", el => {
+    draw(el);
+    el.addEventListener("change", e => { if (e.target.id === "casinoSel") st.casino = e.target.value; });
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.who) st.who = b.dataset.who;
+      else if (b.dataset.game) st.game = b.dataset.game;
+      else if (b.dataset.field) st.field = b.dataset.field;
+      else if (b.dataset.add) st[st.field] = String(r2((+st[st.field] || 0) + +b.dataset.add));
+      else if (b.dataset.key) {
+        const k = b.dataset.key, v = st[st.field];
+        if (k === "del") st[st.field] = v.slice(0, -1);
+        else if (k === ".") { if (!v.includes(".")) st[st.field] = (v || "0") + "."; }
+        else if (!/\.\d\d$/.test(v) && v.replace(".", "").length < 7) st[st.field] = (v === "0" ? "" : v) + k;
+      }
+      else if (b.dataset.k === "close") return closeSheet();
+      else if (b.dataset.k === "busted") { st.cashOut = "0"; st.field = "cashOut"; }
+      else if (b.dataset.k === "save") {
+        const bi = +st.buyIn || 0, co = +st.cashOut || 0;
+        if (!bi && !co) { toast("Enter what you bought in for"); return; }
+        S.sessions.push({ id: uid(), personId: st.who, game: st.game, casino: st.casino, buyIn: r2(bi), cashOut: r2(co), ts: Date.now() });
+        S.tab = "results"; save(); closeSheet(); render(); toast(`${pname(st.who)} ${signed(co - bi)}`); return;
+      }
+      draw(el);
+    });
+  });
+}
+
+/* ---------- ROULETTE ---------- */
+let wheelRot = 0, spinning = false, spinResult = null, safeIds = [];
+function rPlayers() {
+  const r = S.roulette;
+  const all = r.mode === "crew"
+    ? S.people.filter(p => r.inIds.includes(p.id)).map(p => ({ key: p.id, name: p.name }))
+    : r.quick.map((n, i) => ({ key: "q" + i, name: n }));
+  return all.filter(p => !safeIds.includes(p.key));
+}
+function resetSpin() { spinResult = null; safeIds = []; save(); render(); }
+function addQuickName() {
+  const inp = $("#quickName"); const v = (inp.value || "").trim(); if (!v) return;
+  v.split(",").map(s => s.trim()).filter(Boolean).forEach(n => S.roulette.quick.push(n.slice(0, 20)));
+  resetSpin(); setTimeout(() => { const i = $("#quickName"); if (i) i.focus(); }, 0);
+}
+function nameForKey(k) { if (k[0] === "q") return S.roulette.quick[+k.slice(1)] || "?"; return pname(k); }
+function vRoulette() {
+  const r = S.roulette, left = rPlayers(), isLast = r.rule === "last";
+  const people = r.mode === "crew"
+    ? (S.people.length ? `<div class="chips">${S.people.map(p => `<button type="button" class="chip" data-act="rToggle" data-id="${p.id}" aria-pressed="${r.inIds.includes(p.id)}">${esc(p.name)}</button>`).join("")}</div>`
+      : `<div class="muted small">No crew yet. <button class="link" data-act="crew">Add crew</button> or switch to Anyone.</div>`)
+    : `<div class="chips">${r.quick.map((n, i) => `<button type="button" class="chip" aria-pressed="true" data-act="rDelQuick" data-i="${i}" aria-label="Remove ${esc(n)}">${esc(n)}<span class="x">×</span></button>`).join("")}</div>
+       <div style="display:flex;gap:8px"><input id="quickName" class="input" style="flex:1;min-width:0" placeholder="Add names, like Sam, Alex" autocomplete="off" enterkeyhint="done"><button class="btn" data-act="rAddQuick">Add</button></div>`;
+  let result;
+  if (spinResult) {
+    result = `<div class="result" aria-live="polite"><div class="lbl">${isLast ? "Last card standing" : "Picking up the check"}</div><div class="who">${esc(spinResult)}</div>
+      <div class="muted">${r.bill ? `<span class="num" style="color:var(--ink)">${money(+r.bill)}</span>` : "Pays the bill"}${r.what ? " · " + esc(r.what) : ""}</div></div>
+      <div class="btn-row"><button class="btn" data-act="rReset">Run it back</button><button class="btn gold" data-act="rLog">Save result</button></div>`;
+  } else {
+    result = (isLast && safeIds.length ? `<div class="small muted" style="text-align:center">Safe: ${safeIds.map(k => esc(nameForKey(k))).join(", ")} · ${left.length} cards left</div>` : "")
+      + `<button class="btn gold block" data-act="spin" ${left.length < 2 || spinning ? "disabled" : ""}>${left.length < 2 ? "Add at least 2 players" : isLast ? `Pull a card · ${left.length} left` : "Spin the wheel"}</button>`;
+  }
+  const hist = r.history.slice(-8).reverse().map(h => `<div class="row"><div class="grow"><div class="t">${esc(h.who)}</div><div class="s">${esc(h.what || "Bill")} · ${h.n} players · ${timeAgo(h.ts)}</div></div><div class="v">${h.bill ? money(h.bill) : ""}</div></div>`).join("");
+  return `
+  <section class="section">
+    <div class="wheel-wrap"><canvas id="wheel" width="660" height="660" aria-label="Roulette wheel"></canvas>
+      <svg class="pointer" viewBox="0 0 18 26" aria-hidden="true"><path d="M9 26L1.2 9.5a8 8 0 1 1 15.6 0z" fill="var(--gold)"/><circle cx="9" cy="8" r="3" fill="var(--bg)"/></svg></div>
+    ${result}
+  </section>
+  <section class="section"><div class="section-h"><h3>Players</h3></div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Who's playing">
+        <button data-act="rMode" data-v="crew" aria-pressed="${r.mode === "crew"}">My crew</button>
+        <button data-act="rMode" data-v="quick" aria-pressed="${r.mode === "quick"}">Anyone</button></div>
+      ${people}
+    </div></section>
+  <section class="section"><div class="section-h"><h3>Rules</h3></div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Rules">
+        <button data-act="rRule" data-v="one" aria-pressed="${!isLast}">One spin pays</button>
+        <button data-act="rRule" data-v="last" aria-pressed="${isLast}">Last card pays</button></div>
+      <div class="grid2">
+        <div class="field"><label for="billAmt">Bill</label><input id="billAmt" class="input num" inputmode="decimal" placeholder="Optional" value="${esc(r.bill)}"></div>
+        <div class="field"><label for="billWhat">For</label><input id="billWhat" class="input" placeholder="Dinner" value="${esc(r.what)}"></div>
+      </div>
+    </div></section>
+  ${hist ? `<section class="section"><div class="section-h"><h3>Who paid</h3></div><div class="group">${hist}</div></section>` : ""}`;
+}
+function drawWheel() {
+  const cv = $("#wheel"); if (!cv) return;
+  const ctx = cv.getContext("2d"), W = cv.width, R = W / 2, ps = rPlayers();
+  const RED = "#8f2b2b", BLACK = "#1b1d20", GREEN = "#1d5a44", GOLD = "#cfaa63", IVORY = "#f3f1ec";
+  ctx.clearRect(0, 0, W, W);
+  ctx.save(); ctx.translate(R, R);
+  const rim = ctx.createRadialGradient(0, 0, R * .8, 0, 0, R);
+  rim.addColorStop(0, "#3a2c16"); rim.addColorStop(.5, "#6b5228"); rim.addColorStop(1, "#2a2010");
+  ctx.beginPath(); ctx.arc(0, 0, R - 2, 0, Math.PI * 2); ctx.fillStyle = rim; ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, R - 22, 0, Math.PI * 2); ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.stroke();
+  const n = Math.max(ps.length, 1), seg = Math.PI * 2 / n, inner = R - 24;
+  for (let i = 0; i < n; i++) {
+    const a0 = wheelRot + i * seg;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, inner, a0, a0 + seg); ctx.closePath();
+    ctx.fillStyle = !ps.length ? "#2a2d32" : (n % 2 && i === n - 1) ? GREEN : i % 2 ? BLACK : RED; ctx.fill();
+    if (n > 1) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a0) * inner, Math.sin(a0) * inner); ctx.strokeStyle = "rgba(207,170,99,.55)"; ctx.lineWidth = 2; ctx.stroke(); }
+    if (ps[i]) {
+      ctx.save(); ctx.rotate(a0 + seg / 2); ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillStyle = IVORY;
+      ctx.font = `500 ${n > 8 ? 24 : 30}px "Geist", system-ui, sans-serif`;
+      let label = ps[i].name; if (label.length > 12) label = label.slice(0, 11) + "…";
+      ctx.fillText(label, inner - 26, 0); ctx.restore();
+    }
+  }
+  ctx.beginPath(); ctx.arc(0, 0, R * .36, 0, Math.PI * 2); ctx.fillStyle = "#141518"; ctx.fill();
+  ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.stroke();
+  for (let k = 0; k < 4; k++) { ctx.save(); ctx.rotate(wheelRot + k * Math.PI / 2); ctx.beginPath(); ctx.moveTo(R * .12, -5); ctx.lineTo(R * .31, 0); ctx.lineTo(R * .12, 5); ctx.fillStyle = GOLD; ctx.fill(); ctx.restore(); }
+  const hub = ctx.createRadialGradient(-10, -10, 4, 0, 0, R * .16);
+  hub.addColorStop(0, "#f0d79c"); hub.addColorStop(1, "#8a6a2c");
+  ctx.beginPath(); ctx.arc(0, 0, R * .13, 0, Math.PI * 2); ctx.fillStyle = hub; ctx.fill();
+  ctx.restore();
+}
+function spin() {
+  if (S.tab !== "roulette") { setTab("roulette"); return; }
+  const ps = rPlayers(); if (ps.length < 2 || spinning || spinResult) return;
+  spinning = true;
+  const k = rand(ps.length), n = ps.length, seg = Math.PI * 2 / n, TAU = Math.PI * 2;
+  const jitter = (Math.random() - 0.5) * seg * 0.7;
+  const want = -Math.PI / 2 - (k + 0.5) * seg + jitter;
+  const delta = ((want - wheelRot) % TAU + TAU) % TAU;
+  const start = wheelRot, total = delta + TAU * (5 + rand(3));
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const dur = reduce ? 1 : 3800, t0 = performance.now();
+  const btn = view.querySelector('[data-act="spin"]'); if (btn) btn.disabled = true;
+  function frame(t) {
+    const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+    wheelRot = start + total * e; drawWheel();
+    if (p < 1) return requestAnimationFrame(frame);
+    wheelRot = wheelRot % TAU; spinning = false;
+    const picked = ps[k];
+    if (S.roulette.rule === "last") {
+      safeIds.push(picked.key); toast(picked.name + " is safe");
+      const left = rPlayers();
+      if (left.length === 1) spinResult = left[0].name;
+    } else spinResult = picked.name;
+    if (navigator.vibrate) try { navigator.vibrate(spinResult ? [60, 40, 120] : 30); } catch (e) {}
+    render();
+  }
+  requestAnimationFrame(frame);
+}
+function logRoulette() {
+  const r = S.roulette, n = (r.mode === "crew" ? r.inIds.length : r.quick.length);
+  r.history.push({ id: uid(), who: spinResult, bill: r2(+r.bill || 0), what: r.what, n, ts: Date.now() });
+  toast("Saved"); r.bill = ""; r.what = ""; resetSpin();
+}
+
+/* ---------- SPLIT ---------- */
+function roomTotal(r) { return r2(r.nightly * r.nights * (1 + (r.tax || 0) / 100)); }
+function ledger() {
+  const bal = {}; S.people.forEach(p => bal[p.id] = { paid: 0, owes: 0 });
+  const add = (id, k, v) => { if (bal[id]) bal[id][k] += v; };
+  S.rooms.forEach(r => {
+    const tot = roomTotal(r), pn = r.guests.reduce((a, g) => a + g.nights, 0);
+    if (!pn) return;
+    add(r.paidBy, "paid", tot);
+    r.guests.forEach(g => add(g.personId, "owes", tot * g.nights / pn));
+  });
+  S.expenses.forEach(x => {
+    if (!x.among.length) return;
+    add(x.paidBy, "paid", x.amount);
+    x.among.forEach(id => add(id, "owes", x.amount / x.among.length));
+  });
+  const net = S.people.map(p => ({ id: p.id, v: r2(bal[p.id].paid - bal[p.id].owes), ...bal[p.id] }));
+  const cred = net.filter(x => x.v > 0.009).map(x => ({ ...x })).sort((a, b) => b.v - a.v);
+  const debt = net.filter(x => x.v < -0.009).map(x => ({ ...x, v: -x.v })).sort((a, b) => b.v - a.v);
+  const tr = []; let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const amt = r2(Math.min(debt[i].v, cred[j].v));
+    if (amt > 0.009) tr.push({ from: debt[i].id, to: cred[j].id, amt });
+    debt[i].v = r2(debt[i].v - amt); cred[j].v = r2(cred[j].v - amt);
+    if (debt[i].v < 0.01) i++; if (cred[j].v < 0.01) j++;
+  }
+  return { net, tr };
+}
+function vSplit() {
+  const { net, tr } = ledger();
+  const spend = S.rooms.reduce((a, r) => a + roomTotal(r), 0) + S.expenses.reduce((a, x) => a + x.amount, 0);
+  const settle = tr.length ? tr.map(t => `<div class="row"><div class="transfer grow">${mono(t.from)}<span class="t" style="min-width:0">${esc(pname(t.from))}</span>${I.arrow}<span class="t" style="min-width:0">${esc(pname(t.to))}</span></div><div class="v">${money(t.amt)}</div></div>`).join("")
+    : `<div class="empty">${S.rooms.length || S.expenses.length ? "Everyone is square." : "Add a room or a bill to see who owes who."}</div>`;
+  const rooms = S.rooms.map(r => {
+    const tot = roomTotal(r), pn = r.guests.reduce((a, g) => a + g.nights, 0);
+    const guests = S.people.map(p => {
+      const g = r.guests.find(x => x.personId === p.id);
+      return `<div class="row"><button type="button" class="toggle-name" data-act="guestToggle" data-id="${r.id}" data-p="${p.id}" aria-pressed="${!!g}">
+          <span class="check ${g ? "on" : ""}">${g ? I.check : ""}</span><span class="t ${g ? "" : "muted"}">${esc(p.name)}</span></button>
+        ${g ? `<div class="stepper"><button class="tiny" data-act="gStep" data-id="${r.id}" data-p="${p.id}" data-d="-1" aria-label="Fewer nights">${I.minus}</button><b>${g.nights}</b><button class="tiny" data-act="gStep" data-id="${r.id}" data-p="${p.id}" data-d="1" aria-label="More nights">${I.plus}</button></div>
+        <div class="v" style="min-width:76px">${money(pn ? tot * g.nights / pn : 0)}</div>` : ""}</div>`;
+    }).join("");
+    return `<div class="group">
+      <div class="room-head"><div style="display:flex;gap:12px;align-items:start"><div style="flex:1;min-width:0"><div class="t">${esc(r.name)}</div>
+        <div class="small muted num">${money(r.nightly)} × ${r.nights} nights + ${r.tax}% · paid by ${esc(pname(r.paidBy))}</div></div>
+        <button class="tiny" data-act="delRoom" data-id="${r.id}" aria-label="Remove room">${I.x}</button></div>
+        <div class="room-total" style="margin-top:8px">${money(tot)}</div></div>
+      ${guests}</div>`;
+  }).join("");
+  const exps = S.expenses.map(x => `<div class="row indent">${mono(x.paidBy)}<div class="grow"><div class="t">${esc(x.desc)}</div>
+    <div class="s">${esc(pname(x.paidBy))} paid · split ${x.among.length === S.people.length ? "with everyone" : x.among.map(pname).map(esc).join(", ")}</div></div>
+    <div class="v">${money(x.amount)}</div><button class="tiny" data-act="delExp" data-id="${x.id}" aria-label="Remove bill">${I.x}</button></div>`).join("");
+  const nets = net.map(x => `<div class="row indent">${mono(x.id)}<div class="grow"><div class="t">${esc(pname(x.id))}</div><div class="s num">paid ${money(x.paid)} · share ${money(x.owes)}</div></div><div class="v ${cls(x.v)}">${signed(x.v)}</div></div>`).join("");
+  return `
+  <section class="hero"><div class="lbl">Shared spend</div><div class="big">${money(spend)}</div></section>
+  <section class="section"><div class="section-h"><h3>Settle up</h3>${tr.length ? `<button class="link" data-act="copySettle">Copy</button>` : ""}</div><div class="group">${settle}</div></section>
+  <section class="section"><div class="section-h"><h3>Rooms</h3>${S.people.length ? `<button class="link" data-act="addRoom">Add room</button>` : ""}</div>
+    ${rooms || `<div class="group"><div class="empty">Add a room. Shares are by nights stayed.</div></div>`}</section>
+  <section class="section"><div class="section-h"><h3>Bills</h3>${S.people.length ? `<button class="link" data-act="addExp">Add bill</button>` : ""}</div>
+    <div class="group">${exps || `<div class="empty">Dinner, drinks, rides. Add them as you go.</div>`}</div></section>
+  ${S.people.length ? `<section class="section"><div class="section-h"><h3>Balances</h3></div><div class="group">${nets}</div></section>` : ""}`;
+}
+function copySettle() {
+  const { tr } = ledger();
+  const text = `${S.tripName || "Trip"} settle up\n` + tr.map(t => `${pname(t.from)} pays ${pname(t.to)} ${money(t.amt)}`).join("\n");
+  try { navigator.clipboard.writeText(text).then(() => toast("Copied"), () => fallbackCopy(text)); } catch (e) { fallbackCopy(text); }
+}
+function fallbackCopy(text) {
+  openSheet(`<div class="sheet-h"><h2>Copy this</h2></div><textarea class="input" rows="6" id="copyBox" readonly>${esc(text)}</textarea><button class="btn gold block" id="closeCopy">Done</button>`,
+    el => { const t = $("#copyBox", el); t.focus(); t.select(); $("#closeCopy", el).onclick = closeSheet; });
+}
+function openRoomSheet() {
+  const st = { paidBy: S.people[0].id, guests: S.people.slice(0, 2).map(p => p.id) };
+  const draw = el => {
+    el.innerHTML = sheetHead("Add a room") + `
+      <div class="field"><label for="rName">Room</label><input id="rName" class="input" value="${esc(st.name ?? (city().casinos[0] + " room"))}"></div>
+      <div class="grid2"><div class="field"><label for="rRate">Per night</label><input id="rRate" class="input num" inputmode="decimal" placeholder="$0" value="${esc(st.rate ?? "")}"></div>
+        <div class="field"><label for="rNights">Nights</label><input id="rNights" class="input num" inputmode="numeric" value="${esc(st.nights ?? "2")}"></div></div>
+      <div class="field"><label for="rTax">Taxes and resort fee %</label><input id="rTax" class="input num" inputmode="decimal" value="${esc(st.tax ?? "18")}"></div>
+      <div class="field"><span class="lbl">Paid by</span><div class="chips">${chipsHTML(S.people.map(p => ({ v: p.id, l: p.name })), [st.paidBy], "pay")}</div></div>
+      <div class="field"><span class="lbl">Staying</span><div class="chips">${chipsHTML(S.people.map(p => ({ v: p.id, l: p.name })), st.guests, "guest")}</div></div>
+      <button class="btn gold block" data-k="save">Add room</button>`;
+  };
+  openSheet("", el => {
+    draw(el);
+    const keep = () => { st.name = $("#rName", el).value; st.rate = $("#rRate", el).value; st.nights = $("#rNights", el).value; st.tax = $("#rTax", el).value; };
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return; keep();
+      if (b.dataset.k === "close") return closeSheet();
+      if (b.dataset.pay) st.paidBy = b.dataset.pay;
+      else if (b.dataset.guest) st.guests = st.guests.includes(b.dataset.guest) ? st.guests.filter(x => x !== b.dataset.guest) : st.guests.concat(b.dataset.guest);
+      else if (b.dataset.k === "save") {
+        const nightly = +st.rate, nights = Math.max(1, Math.round(+st.nights || 1));
+        if (!(nightly > 0)) { toast("Enter the nightly rate"); return; }
+        if (!st.guests.length) { toast("Pick who's staying"); return; }
+        S.rooms.push({ id: uid(), name: (st.name || "Room").trim(), nightly: r2(nightly), nights, tax: r2(+st.tax || 0), paidBy: st.paidBy,
+          guests: st.guests.map(id => ({ personId: id, nights })) });
+        save(); closeSheet(); render(); return;
+      } else return;
+      draw(el);
+    });
+  });
+}
+function openExpenseSheet() {
+  const st = { desc: "Dinner", amount: "", paidBy: S.people[0].id, among: S.people.map(p => p.id) };
+  const each = () => st.among.length ? money((+st.amount || 0) / st.among.length) : "—";
+  const draw = el => {
+    el.innerHTML = sheetHead("Add a bill") + `
+      <div class="chips">${chipsHTML(EXP_QUICK.map(x => ({ v: x, l: x })), [st.desc], "desc")}</div>
+      <div class="grid2"><div class="field"><label for="eDesc">What</label><input id="eDesc" class="input" value="${esc(st.desc)}"></div>
+        <div class="field"><label for="eAmt">Amount</label><input id="eAmt" class="input num" inputmode="decimal" placeholder="$0" value="${esc(st.amount)}"></div></div>
+      <div class="field"><span class="lbl">Paid by</span><div class="chips">${chipsHTML(S.people.map(p => ({ v: p.id, l: p.name })), [st.paidBy], "pay")}</div></div>
+      <div class="field"><span class="lbl">Split between</span><div class="chips">${chipsHTML(S.people.map(p => ({ v: p.id, l: p.name })), st.among, "among")}</div></div>
+      <div class="netline"><span class="lbl">Each</span><b id="eachOut">${each()}</b></div>
+      <button class="btn gold block" data-k="save">Add bill</button>`;
+  };
+  openSheet("", el => {
+    draw(el);
+    el.addEventListener("input", e => { if (e.target.id === "eAmt") { st.amount = e.target.value; $("#eachOut", el).textContent = each(); } if (e.target.id === "eDesc") st.desc = e.target.value; });
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.k === "close") return closeSheet();
+      if (b.dataset.desc) st.desc = b.dataset.desc;
+      else if (b.dataset.pay) st.paidBy = b.dataset.pay;
+      else if (b.dataset.among) st.among = st.among.includes(b.dataset.among) ? st.among.filter(x => x !== b.dataset.among) : st.among.concat(b.dataset.among);
+      else if (b.dataset.k === "save") {
+        const amount = +st.amount;
+        if (!(amount > 0)) { toast("Enter the amount"); return; }
+        if (!st.among.length) { toast("Pick who's splitting"); return; }
+        S.expenses.push({ id: uid(), desc: (st.desc || "Bill").trim(), amount: r2(amount), paidBy: st.paidBy, among: st.among.slice() });
+        S.tab = "split"; save(); closeSheet(); render(); return;
+      } else return;
+      draw(el);
+      if (b.dataset.desc) $("#eAmt", el).focus();
+    });
+  });
+}
+
+/* ---------- TOWN ---------- */
+const WXI = {
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  partly: '<path d="M8 3.5v1.5M3.5 8H5M4.8 4.8l1 1M11.2 4.8l-1 1"/><path d="M5.6 10.5A3 3 0 0 1 11 7.2"/><path d="M8 19.5h9a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.6 1.4A2.8 2.8 0 0 0 8 19.5z"/>',
+  cloud: '<path d="M7 18.5h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.6A3.2 3.2 0 0 0 7 18.5z"/>',
+  rain: '<path d="M7 14.5h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.6A3.2 3.2 0 0 0 7 14.5z"/><path d="M8 17.5l-1 3M12 17.5l-1 3M16 17.5l-1 3"/>',
+  snow: '<path d="M7 14.5h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.6A3.2 3.2 0 0 0 7 14.5z"/><path d="M8 18h.01M12 20h.01M16 18h.01" stroke-width="2.4"/>',
+  storm: '<path d="M7 14.5h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.6A3.2 3.2 0 0 0 7 14.5z"/><path d="M12.5 15.5l-2 3.5h3l-2 3.5"/>',
+  fog: '<path d="M4 9h16M6 13h12M4 17h16"/>'
+};
+const WX = c => c === 0 ? ["sun", "Clear"] : c <= 2 ? ["partly", "Partly cloudy"] : c === 3 ? ["cloud", "Cloudy"] : c <= 48 ? ["fog", "Fog"] : c <= 57 ? ["rain", "Drizzle"]
+  : c <= 67 ? ["rain", "Rain"] : c <= 77 ? ["snow", "Snow"] : c <= 82 ? ["rain", "Showers"] : ["storm", "Thunderstorms"];
+const wxIcon = (c, cl) => `<svg class="${cl || ""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${WXI[WX(c)[0]]}</svg>`;
+const SAMPLE_WX = {
+  ac: { t: 61, f: 58, code: 2, wind: 14, days: [[2, 64, 52, 10], [3, 60, 50, 30], [61, 57, 49, 70], [0, 63, 51, 0]] },
+  ct: { t: 58, f: 56, code: 1, wind: 8, days: [[1, 63, 44, 0], [3, 59, 42, 20], [61, 55, 41, 60], [0, 61, 43, 0]] },
+  nh: { t: 63, f: 62, code: 2, wind: 9, days: [[2, 66, 49, 10], [3, 62, 47, 30], [61, 58, 46, 70], [0, 64, 48, 0]] },
+  lv: { t: 84, f: 81, code: 0, wind: 6, days: [[0, 86, 62, 0], [0, 85, 61, 0], [1, 82, 59, 0], [0, 84, 60, 0]] }
+};
+const wxLoading = {};
+function loadWeather() {
+  const key = S.city, c = city(), cached = S.weather[key];
+  if (cached && !cached.sample && Date.now() - cached.at < 30 * 60000) return;
+  if (cached && cached.sample && Date.now() - cached.at < 5 * 60000) return;
+  if (wxLoading[key]) return; wxLoading[key] = true;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=4`;
+  const ctl = window.AbortController ? new AbortController() : null; const to = setTimeout(() => ctl && ctl.abort(), 6000);
+  fetch(url, ctl ? { signal: ctl.signal } : {}).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
+    S.weather[key] = { at: Date.now(), t: Math.round(d.current.temperature_2m), f: Math.round(d.current.apparent_temperature), code: d.current.weather_code,
+      wind: Math.round(d.current.wind_speed_10m), days: d.daily.time.map((_, i) => [d.daily.weather_code[i], Math.round(d.daily.temperature_2m_max[i]), Math.round(d.daily.temperature_2m_min[i]), d.daily.precipitation_probability_max[i] || 0]),
+      dates: d.daily.time };
+  }).catch(() => { S.weather[key] = Object.assign({ at: Date.now(), sample: true }, SAMPLE_WX[key]); })
+    .finally(() => { clearTimeout(to); wxLoading[key] = false; save(); if (S.tab === "town" && S.city === key) render(); });
+}
+function vOverview() {
+  const c = city(), w = S.weather[S.city];
+  let wx = `<div class="wx"><div class="empty">Loading the forecast…</div></div>`;
+  if (w) {
+    const label = WX(w.code)[1];
+    const days = w.days.map((d, i) => { const name = i === 0 ? "Today" : w.dates ? new Date(w.dates[i] + "T12:00").toLocaleDateString("en-US", { weekday: "short" }) : ["Today", "Tmrw", "Day 3", "Day 4"][i];
+      return `<div class="wx-day"><span class="muted">${name}</span>${wxIcon(d[0])}<span class="num">${d[1]}° <span class="muted">${d[2]}°</span></span><span class="muted small">${d[3]}% rain</span></div>`; }).join("");
+    wx = `<div class="wx"><div class="wx-now"><div class="temp">${w.t}°</div><div style="flex:1;min-width:0">${wxIcon(w.code, "ico")}<div style="font-weight:500">${label}</div><div class="small muted">Feels ${w.f}° · Wind ${w.wind} mph</div></div></div>
+      <div class="wx-days">${days}</div></div>
+      <div class="small muted" style="padding:0 4px">${w.sample ? "Sample forecast. Live weather loads when the app runs from its own web address." : "Live forecast from Open-Meteo · updated " + timeAgo(w.at)}</div>`;
+  }
+  const ups = c.updates.map(u => `<div class="row"><div class="grow" style="display:grid;gap:3px"><span class="tagline">${esc(u.tag)}</span><div>${esc(u.t)}</div></div></div>`).join("");
+  const casinos = c.casinos.map(n => `<a class="row" style="text-decoration:none;color:inherit" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(n + " " + c.name)}"><div class="grow t">${esc(n)}</div><span class="small muted">Directions</span></a>`).join("");
+  return `
+  <section class="section">${wx}</section>
+  <section class="section"><div class="section-h"><h3>Local notes</h3><span class="small muted">Sample</span></div><div class="group">${ups}</div></section>
+  <section class="section"><div class="section-h"><h3>Casinos</h3></div><div class="group">${casinos}</div></section>`;
+}
+
+/* ---------- TOWN: plan + poker ---------- */
+const VERIFIED = "Oct 18, 2026";
+// Typical nightly rates incl. resort fees, before tax: [weeknight, Fri/Sat night]. Anchored on Kayak/LVCVA data, Oct 2026.
+const HOTELS = {
+  ac: { tiers: [
+      { name: "Value", eg: "Resorts, Bally's, Tropicana, Golden Nugget", rate: [95, 230], stars: "class%3D2%3Bclass%3D3" },
+      { name: "Comfort", eg: "Harrah's, Caesars, Hard Rock", rate: [160, 400], stars: "class%3D4" },
+      { name: "Luxury", eg: "Borgata, Ocean Casino Resort", rate: [240, 520], stars: "class%3D4%3Bclass%3D5" }],
+    month: [.75, .75, .8, .85, 1, 1.2, 1.4, 1.35, 1.05, .95, .85, .9], q: "Atlantic City, New Jersey" },
+  ct: { tiers: [
+      { name: "Value", eg: "Motel 6, Travelodge, Rodeway Inn", rate: [70, 110], stars: "class%3D1%3Bclass%3D2" },
+      { name: "Comfort", eg: "Holiday Inn Express, Hampton Inn, Home2 Suites", rate: [135, 190], stars: "class%3D3" },
+      { name: "Casino hotel", eg: "The Inn at Charles Town (Hollywood Casino)", rate: [180, 315], stars: "class%3D3%3Bclass%3D4" }],
+    month: [.85, .85, .9, 1, 1.05, 1.05, 1.05, 1.05, 1.05, 1.1, 1, .9], q: "Charles Town, West Virginia" },
+  nh: { tiers: [
+      { name: "Value", eg: "Hampton Inn, Hyatt Place, Oxon Hill chains", rate: [150, 190], stars: "class%3D2%3Bclass%3D3" },
+      { name: "Comfort", eg: "Gaylord National, Westin, AC Hotel", rate: [250, 310], stars: "class%3D4" },
+      { name: "Luxury", eg: "MGM National Harbor", rate: [320, 490], stars: "class%3D4%3Bclass%3D5" }],
+    month: [.85, .85, 1.05, 1.2, 1.1, 1.1, 1, .95, 1, 1.05, .95, 1.05], q: "National Harbor, Maryland" },
+  lv: { tiers: [
+      { name: "Value", eg: "Excalibur, Luxor, Flamingo, The LINQ", rate: [80, 190], stars: "class%3D3" },
+      { name: "Comfort", eg: "MGM Grand, Park MGM, Horseshoe, New York-New York", rate: [150, 310], stars: "class%3D4" },
+      { name: "Luxury", eg: "Bellagio, Wynn, Venetian, Fontainebleau", rate: [310, 560], stars: "class%3D5" }],
+    month: [1, 1, 1.15, 1.05, 1.05, .9, .8, .8, 1, 1.05, 1, .85], q: "Las Vegas, Nevada" }
+};
+const SPIKES = { "12-31": 1.9, "12-30": 1.3, "07-04": 1.3, "07-03": 1.2, "05-25": 1.15, "09-07": 1.15 };
+const AIRPORTS = {
+  ac: [{ code: "ACY", name: "Atlantic City Intl", drive: "20 min" }, { code: "PHL", name: "Philadelphia", drive: "1 hr" }, { code: "EWR", name: "Newark", drive: "2 hr" }],
+  ct: [{ code: "IAD", name: "Washington Dulles", drive: "1 hr" }, { code: "BWI", name: "Baltimore", drive: "1 hr 20 min" }, { code: "DCA", name: "Reagan National", drive: "1 hr 20 min" }],
+  nh: [{ code: "DCA", name: "Reagan National", drive: "15 min" }, { code: "BWI", name: "Baltimore", drive: "40 min" }, { code: "IAD", name: "Washington Dulles", drive: "45 min" }],
+  lv: [{ code: "LAS", name: "Harry Reid Intl", drive: "10 min" }]
+};
+const HOME_SUGGEST = ["PHL", "EWR", "JFK", "LGA", "BWI", "DCA", "IAD", "BOS", "CLT", "ATL", "ORD", "DFW", "LAX"];
+
+const ROOM_LINKS = {
+  "Borgata": "https://www.pokeratlas.com/poker-room/borgata-atlantic-city/tournaments",
+  "MGM National Harbor": "https://www.pokeratlas.com/poker-room/mgm-national-oxon-hill/tournaments",
+  "Live! Casino Maryland": "https://www.pokeratlas.com/poker-tournaments/dc-baltimore/upcoming",
+  "Hollywood Charles Town": "https://www.pennentertainment.com/hollywood-charles-town/casino",
+  "Wynn": "https://www.wynnlasvegas.com/casino/poker",
+  "Venetian": "https://www.venetianlasvegas.com/resort/casino/poker/deepstack-extravaganza-poker-tournament.html",
+  "Aria": "https://www.pokeratlas.com/poker-room/aria-las-vegas/tournaments",
+  "South Point": "https://www.pokeratlas.com/poker-room/south-point-las-vegas/tournaments",
+  "Las Vegas": "https://www.pokeratlas.com/poker-tournaments/las-vegas/upcoming"
+};
+// days: 0=Sun..6=Sat
+const POKER = {
+  ac: {
+    note: "Borgata is the only Atlantic City room running regular tournaments. Harrah's runs the WSOP Circuit each August but no dailies right now. Thursday to Saturday slots at Borgata go to series events.",
+    daily: [
+      { room: "Borgata", days: "0", time: "10:15am", name: "Early Bird Survivor", buy: 180, gtd: "$1,500 payouts" },
+      { room: "Borgata", days: "0", time: "2:15pm", name: "Deep Stack Second Chance Survivor", buy: 250, gtd: "$4K GTD" },
+      { room: "Borgata", days: "1", time: "11:15am", name: "Monster Stack Monday", buy: 180, gtd: "$3K GTD" },
+      { room: "Borgata", days: "1", time: "6:15pm", name: "Monday Night Madness", buy: 130 },
+      { room: "Borgata", days: "2", time: "11:15am", name: "Big Stack Double Green Chip Bounty", buy: 190, gtd: "$3K GTD" },
+      { room: "Borgata", days: "2", time: "6:15pm", name: "Deep Stack Triple Blue Chip Bounty", buy: 140 },
+      { room: "Borgata", days: "3", time: "11:15am", name: "Deep Stack 30/30", buy: 250, gtd: "$8K GTD" },
+      { room: "Borgata", days: "3", time: "6:15pm", name: "Pure Grind & Mini Grind Qualifier", buy: 85 }
+    ],
+    specials: [
+      { name: "Lions of the East", room: "Borgata", start: "2026-10-13", end: "2026-10-18", detail: "Sunday Lion's Stack $400, $50K GTD" },
+      { name: "Pure Grind Series: Black Chip Bounty", room: "Borgata", start: "2026-10-21", end: "2026-10-25", detail: "$350 buy-in, $200K GTD. Seven Day 1 flights." },
+      { name: "Borgata Fall Poker Open", room: "Borgata", start: "2026-11-04", end: "2026-11-17", big: true, detail: "43 events. Championship $2,700, $1M GTD (Nov 13–17). Deepstack Kickoff $600, $1M GTD (Nov 4–8). Mini Main $350, $500K GTD." },
+      { name: "Pure Grind Series: Weekend Warrior", room: "Borgata", start: "2026-11-26", end: "2026-11-29" },
+      { name: "December Deep Stack Series", room: "Borgata", start: "2026-12-07", end: "2026-12-12" },
+      { name: "Pure Grind Series: Minor Mystery Bounty", room: "Borgata", start: "2026-12-26", end: "2026-12-30" }
+    ],
+    src: "PokerAtlas room schedule and today's Atlantic City listings, pokerfuse (Fall Poker Open)."
+  },
+  nh: {
+    note: "MGM National Harbor runs two tournaments most days. Live! Casino in Hanover, about 35 minutes north, adds a busy daily schedule.",
+    daily: [
+      { room: "MGM National Harbor", days: "1", time: "7:15pm", name: "Double Stack NLH", buy: 200 },
+      { room: "MGM National Harbor", days: "2", time: "11:15am", name: "Double Green Chip Bounty", buy: 200, gtd: "$5K GTD" },
+      { room: "MGM National Harbor", days: "2", time: "7:15pm", name: "Black Chip Bounty", buy: 300, gtd: "$8K GTD" },
+      { room: "MGM National Harbor", days: "3", time: "11:15am", name: "No Limit Hold'em", buy: 200, gtd: "$5K GTD" },
+      { room: "MGM National Harbor", days: "3", time: "7:15pm", name: "Double Stack NLH", buy: 200 },
+      { room: "MGM National Harbor", days: "4", time: "11:15am", name: "Triple Green Chip Bounty", buy: 250 },
+      { room: "MGM National Harbor", days: "4", time: "7:15pm", name: "No Limit Hold'em", buy: 300 },
+      { room: "MGM National Harbor", days: "5", time: "11:15am", name: "Mulligan NLH", buy: 300 },
+      { room: "MGM National Harbor", days: "6", time: "11:15am", name: "No Limit Hold'em", buy: 400, gtd: "$8K GTD" },
+      { room: "MGM National Harbor", days: "0", time: "4:15pm", name: "Double Board Bomb Pot", buy: 200 },
+      { room: "Live! Casino Maryland", days: "1", time: "11:15am", name: "Fat Stacks Green Chip Bounty", buy: 120 },
+      { room: "Live! Casino Maryland", days: "1", time: "7:15pm", name: "Quad Stacks", buy: 140, gtd: "$3K GTD" },
+      { room: "Live! Casino Maryland", days: "2", time: "11:15am", name: "Triple Stacks", buy: 140 },
+      { room: "Live! Casino Maryland", days: "2", time: "7:15pm", name: "Quad Stacks Double Green Chip Bounty", buy: 200, gtd: "$10K GTD" },
+      { room: "Live! Casino Maryland", days: "3", time: "11:15am", name: "Double Green Chip Bounty", buy: 160, gtd: "$3K GTD" },
+      { room: "Live! Casino Maryland", days: "5", time: "7:15pm", name: "Weekend Warm-Up Green Chip Bounty", buy: 140 },
+      { room: "Live! Casino Maryland", days: "6", time: "11:15am", name: "Mystery Madness", buy: 300, gtd: "$30K GTD" },
+      { room: "Live! Casino Maryland", days: "6", time: "5:15pm", name: "Nightly NLH", buy: 200 },
+      { room: "Live! Casino Maryland", days: "0", time: "11:15am", name: "Quad Stacks", buy: 140, gtd: "$5K GTD" },
+      { room: "Live! Casino Maryland", days: "0", time: "5:15pm", name: "Triple Stacks Turbo", buy: 140 }
+    ],
+    specials: [
+      { name: "Pokerfest Maryland", room: "Live! Casino Maryland", start: "2026-10-21", end: "2026-11-01", detail: "Hanover, MD. Satellites running now." },
+      { name: "Potomac Winter Poker Open", room: "MGM National Harbor", start: "2027-02-10", end: "2027-02-22", tbd: true, big: true, detail: "Runs every February. The 2026 edition was Feb 11–23. 2027 dates aren't posted yet." }
+    ],
+    src: "PokerAtlas MGM National Harbor schedule and DC and Baltimore listings."
+  },
+  ct: {
+    note: "Hollywood Casino's 17-table poker room has no fixed tournament schedule. It posts a monthly calendar with occasional events, often on Sundays. The room is closed Monday and Tuesday.",
+    hours: "Wed, Thu and Sun 9am to 3am. Fri and Sat 9am to 6am.",
+    daily: [
+      { room: "Hollywood Charles Town", days: "0", time: "2:15pm", name: "Double Green Chip Bounty (some Sundays)", buy: 225 }
+    ],
+    specials: [],
+    src: "Hollywood Casino Charles Town website and PokerAtlas."
+  },
+  lv: {
+    note: "Venetian and Wynn run back-to-back series instead of dailies. South Point and Aria are the steadiest daily games.",
+    daily: [
+      { room: "South Point", days: "0123456", time: "10:10am", name: "No Limit Hold'em", buy: 120 },
+      { room: "Aria", days: "123456", time: "1:00pm", name: "No Limit Hold'em", buy: 200 },
+      { room: "Aria", days: "0", time: "1:00pm", name: "Pot Limit Omaha", buy: 300, gtd: "$10K GTD" },
+      { room: "Wynn", days: "12346", time: "12:00pm", name: "No Limit Hold'em (outside series)", buy: 200, gtd: "$10K GTD" },
+      { room: "Wynn", days: "5", time: "12:00pm", name: "Friday NLH (outside series)", buy: 240, gtd: "$40K GTD" },
+      { room: "Wynn", days: "0123456", time: "6:00pm", name: "Nightly NLH (outside series)", buy: 160, gtd: "$10K GTD" },
+      { room: "South Point", days: "0123456", time: "2:10pm", name: "Chip-Chop Survivor", buy: 120 },
+      { room: "South Point", days: "0", time: "6:10pm", name: "NLH Bounty", buy: 200, gtd: "$10K GTD" },
+      { room: "South Point", days: "36", time: "6:10pm", name: "NLH Deep Stack", buy: 200 },
+      { room: "South Point", days: "5", time: "6:10pm", name: "NLH 50-50 Bounty", buy: 240 },
+      { room: "South Point", days: "124", time: "6:10pm", name: "NLH Turbo Mega Stack", buy: 120 },
+      { room: "South Point", days: "0123456", time: "10:10pm", name: "NLH Turbo Bounty", buy: 120 }
+    ],
+    specials: [
+      { name: "Wynn Fall Classic", room: "Wynn", start: "2026-09-28", end: "2026-10-25", detail: "44 events, over $2M guaranteed." },
+      { name: "DeepStack Showdown", room: "Venetian", start: "2026-09-28", end: "2026-10-27", detail: "Events at 11:10am and 5:10pm most days, $200 to $400." },
+      { name: "Mix Game Carnival", room: "Orleans", start: "2026-10-20", end: "2026-10-30" },
+      { name: "PGT Sprint", room: "Aria", start: "2026-10-27", end: "2026-11-05", detail: "High roller series." },
+      { name: "WPT Fall Festival", room: "Venetian", start: "2026-10-28", end: "2026-11-15", big: true, detail: "WPT Fall Championship $5,000, $2M GTD (Nov 5–10). $1,100 $500K GTD (Oct 29–Nov 2)." },
+      { name: "South Point $333K Fall Freeroll", room: "South Point", start: "2026-11-09", end: "2026-11-11", detail: "For players who logged 100 hours Aug 1 to Oct 31." },
+      { name: "DeepStack Extravaganza IV", room: "Venetian", start: "2026-11-16", end: "2026-12-23", detail: "PokerAtlas Championship $2,200, $1M GTD (Dec 12–14)." },
+      { name: "WPT World Championship", room: "Wynn", start: "2026-11-27", end: "2026-12-21", big: true, detail: "61 events. New Super Gold Million: $400 buy-in, $3M GTD. Wynn dailies pause during the series." },
+      { name: "New Year's Extravaganza", room: "Venetian", start: "2026-12-24", end: "2027-01-10", detail: "Ante Up Championship $2,200 (Dec 27–31). MSPT $1,600, $400K GTD (Jan 1–4)." },
+      { name: "Wynn Signature Series", room: "Wynn", start: "2027-01-11", end: "2027-01-24", detail: "18 events." }
+    ],
+    src: "Wynn and Venetian official poker pages, PokerAtlas room schedules and today's Las Vegas listings."
+  }
+};
+
+const ymd = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const parseYmd = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const fmtDay = s => parseYmd(s).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function tripState() {
+  if (!S.trip) {
+    const d = new Date(); const add = (5 - d.getDay() + 7) % 7 || 7; d.setDate(d.getDate() + add);
+    const out = new Date(d); out.setDate(out.getDate() + 2);
+    S.trip = { in: ymd(d), out: ymd(out), home: "PHL", direct: false };
+  }
+  return S.trip;
+}
+function nightsOf(t) {
+  const a = parseYmd(t.in), b = parseYmd(t.out), list = [];
+  for (const d = new Date(a); d < b && list.length < 30; d.setDate(d.getDate() + 1)) list.push(new Date(d));
+  return list;
+}
+function hotelEstimate(key, tier, nights) {
+  const H = HOTELS[key]; let sum = 0;
+  nights.forEach(d => {
+    const wk = d.getDay() === 5 || d.getDay() === 6;
+    const spike = SPIKES[String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0")] || 1;
+    sum += tier.rate[wk ? 1 : 0] * H.month[d.getMonth()] * spike;
+  });
+  return sum;
+}
+const round5 = n => Math.round(n / 5) * 5;
+function bookingUrl(key, tier, t) {
+  return `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(HOTELS[key].q)}&checkin=${t.in}&checkout=${t.out}&group_adults=2&no_rooms=1&nflt=${tier.stars}&order=price`;
+}
+function kayakFlights(from, to, t) {
+  return `https://www.kayak.com/flights/${from}-${to}/${t.in}/${t.out}?sort=price_a${t.direct ? "&fs=stops=0" : ""}`;
+}
+function googleFlights(from, to, t) {
+  const q = `Flights from ${from} to ${to} on ${t.in} returning ${t.out}${t.direct ? " nonstop" : ""}`;
+  return "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
+}
+
+function vTownTabs() {
+  const v = S.townView || "overview";
+  return `<div class="seg" role="group" aria-label="Town sections">
+    <button data-act="townView" data-v="overview" aria-pressed="${v === "overview"}">Today</button>
+    <button data-act="townView" data-v="plan" aria-pressed="${v === "plan"}">Plan a trip</button>
+    <button data-act="townView" data-v="poker" aria-pressed="${v === "poker"}">Poker</button></div>`;
+}
+function vTown() {
+  const cities = Object.entries(CITIES).map(([k, v]) => `<button type="button" class="chip" data-act="city" data-v="${k}" aria-pressed="${k === S.city}">${esc(v.name)}</button>`).join("");
+  const v = S.townView || "overview";
+  return `<div class="city-scroll">${cities}</div>${vTownTabs()}` + (v === "plan" ? vPlan() : v === "poker" ? vPoker() : vOverview());
+}
+function vPlan() {
+  const t = tripState(), nights = nightsOf(t), n = nights.length, key = S.city;
+  const wkNights = nights.filter(d => d.getDay() === 5 || d.getDay() === 6).length;
+  const tiers = n ? HOTELS[key].tiers.map(tier => {
+    const est = hotelEstimate(key, tier, nights), lo = round5(est * .85), hi = round5(est * 1.15);
+    return `<a class="row" style="text-decoration:none;color:inherit" target="_blank" rel="noopener" href="${bookingUrl(key, tier, t)}">
+      <div class="grow"><div class="t">${esc(tier.name)}</div><div class="s">${esc(tier.eg)}</div></div>
+      <div style="text-align:right"><div class="v">${money(lo)}–${money(hi).slice(1)}</div><div class="s">~${money(round5(est / n))} a night</div></div></a>`;
+  }).join("") : `<div class="empty">Pick a check-out date after check-in.</div>`;
+  const ap = AIRPORTS[key], home = (t.home || "").toUpperCase();
+  const okHome = /^[A-Z]{3}$/.test(home);
+  const flights = okHome ? ap.map(a => a.code === home ? `<div class="row"><div class="grow"><div class="t">${a.code} · ${esc(a.name)}</div><div class="s">That's your home airport. Drive or take the train.</div></div></div>`
+    : `<div class="row"><div class="grow"><div class="t">${home} → ${a.code}</div><div class="s">${esc(a.name)} · ${a.drive} to town</div></div>
+      <a class="link small" target="_blank" rel="noopener" href="${googleFlights(home, a.code, t)}">Google</a>
+      <a class="link small" target="_blank" rel="noopener" href="${kayakFlights(home, a.code, t)}">Kayak</a></div>`).join("")
+    + (ap.length > 1 ? `<a class="row" style="text-decoration:none;color:inherit" target="_blank" rel="noopener" href="${kayakFlights(home, ap.map(a => a.code).filter(c => c !== home).join(","), t)}"><div class="grow"><div class="t">Compare all ${ap.length} airports</div><div class="s">Cheapest fare first on Kayak</div></div><span class="link small">Open</span></a>` : "")
+    : `<div class="empty">Enter your home airport code, like PHL.</div>`;
+  return `
+  <section class="section"><div class="section-h"><h3>Dates</h3><span class="small muted">${n} night${n === 1 ? "" : "s"}${wkNights ? ` · ${wkNights} weekend` : ""}</span></div>
+    <div class="grid2"><div class="field"><label for="tIn">Check in</label><input id="tIn" class="input" type="date" value="${t.in}"></div>
+      <div class="field"><label for="tOut">Check out</label><input id="tOut" class="input" type="date" value="${t.out}" min="${t.in}"></div></div></section>
+  <section class="section"><div class="section-h"><h3>Hotels for 2 guests</h3><span class="small muted">Estimate</span></div>
+    <div class="group">${tiers}</div>
+    <div class="small muted" style="padding:0 4px">Typical totals for your dates, including resort fees and before tax. Friday and Saturday nights cost more, and so do peak months and holidays. Tap a level to see live prices on Booking.com, cheapest first.</div></section>
+  <section class="section"><div class="section-h"><h3>Flights</h3></div>
+    <div class="controls">
+      <div class="grid2" style="align-items:end"><div class="field"><label for="tHome">Flying from</label><input id="tHome" class="input" style="text-transform:uppercase" maxlength="3" autocomplete="off" value="${esc(home)}"></div>
+        <label class="switch" for="tDirect"><input type="checkbox" id="tDirect" ${t.direct ? "checked" : ""}><span class="track"><span class="knob"></span></span><span>Nonstop only</span></label></div>
+      <div class="chips">${HOME_SUGGEST.map(c => `<button type="button" class="chip" data-act="home" data-v="${c}" aria-pressed="${c === home}">${c}</button>`).join("")}</div>
+    </div>
+    <div class="group">${flights}</div>
+    <div class="small muted" style="padding:0 4px">Live fares open sorted cheapest first${t.direct ? ", nonstop flights only" : ""}. The app can't pull fares in directly yet. That needs a paid flight data account.</div></section>`;
+}
+function vPoker() {
+  const P = POKER[S.city], today = ymd(new Date());
+  const t = tripState(), tripDays = [];
+  for (const d = parseYmd(t.in); ymd(d) <= t.out && tripDays.length < 10; d.setDate(d.getDate() + 1)) tripDays.push(ymd(d));
+  const sel = tripDays.includes(S.pokerDate) ? S.pokerDate : tripDays.includes(today) ? today : tripDays[0];
+  const day = parseYmd(sel).getDay();
+  const onDay = P.specials.filter(s => !s.tbd && s.start <= sel && s.end >= sel);
+  const list = P.daily.filter(x => x.days.includes(String(day)) && !(/outside series/.test(x.name) && onDay.some(s => s.room === x.room)))
+    .sort((a, b) => toMin(a.time) - toMin(b.time));
+  const rows = list.map(x => `<div class="row"><div style="width:62px;flex:none" class="num small">${x.time}</div>
+    <div class="grow"><div class="t" style="white-space:normal">${esc(x.name)}</div><div class="s">${esc(x.room)}${x.gtd ? " · " + esc(x.gtd) : ""}</div></div>
+    <div class="v">$${x.buy}</div></div>`).join("") || `<div class="empty">${S.city === "ct" ? "No tournament on the calendar for this day. Check the monthly calendar." : S.city === "lv" ? "" : "No regular tournament this day. Series events often fill these days."}</div>`;
+  const during = P.specials.filter(s => !s.tbd && s.start <= t.out && s.end >= t.in && s.end >= today);
+  const later = P.specials.filter(s => !during.includes(s) && s.end >= today);
+  const spRow = s => {
+    const live = s.start <= today && !s.tbd;
+    return `<div class="row" style="align-items:start"><div class="grow" style="display:grid;gap:3px">
+      <span class="tagline" style="color:${live ? "var(--win)" : "var(--gold)"}">${live ? "Happening now" : s.tbd ? "Dates not posted" : fmtDay(s.start) + (s.end !== s.start ? " – " + fmtDay(s.end) : "")}</span>
+      <div class="t" style="white-space:normal">${esc(s.name)}</div>
+      <div class="s" style="white-space:normal">${esc(s.room)}${s.detail ? " · " + esc(s.detail) : ""}</div></div></div>`;
+  };
+  const dayChip = d => { const x = parseYmd(d); return `<button type="button" class="chip daychip" data-act="pokerDate" data-v="${d}" aria-pressed="${d === sel}"><span>${x.toLocaleDateString("en-US", { weekday: "short" })}</span><b>${x.getDate()}</b></button>`; };
+  const seriesToday = onDay.map(s => `<div class="row"><div class="grow"><div class="tagline">Series running</div><div class="t" style="white-space:normal">${esc(s.name)}</div><div class="s">${esc(s.room)} · events most of the day</div></div></div>`).join("");
+  const rooms = [...new Set(P.daily.map(x => x.room).concat(P.specials.map(s => s.room)))].filter(r => ROOM_LINKS[r]);
+  if (S.city === "lv") rooms.push("Las Vegas");
+  return `
+  <div class="small muted" style="padding:0 4px">${esc(P.note)}${P.hours ? " Hours: " + esc(P.hours) : ""}</div>
+  <section class="section"><div class="section-h"><h3>Your trip · ${fmtDay(t.in)} – ${fmtDay(t.out)}</h3><button class="link" data-act="townView" data-v="plan">Change dates</button></div>
+    <div class="day-scroll">${tripDays.map(dayChip).join("")}</div>
+    <div class="group">${seriesToday}${rows}</div></section>
+  <section class="section"><div class="section-h"><h3>Series during your trip</h3></div><div class="group">${during.map(spRow).join("") || `<div class="empty">No special series overlap your dates.</div>`}</div></section>
+  ${later.length ? `<section class="section"><div class="section-h"><h3>Other series</h3></div><div class="group">${later.map(spRow).join("")}</div></section>` : ""}
+  <section class="section"><div class="section-h"><h3>Check before you go</h3></div>
+    <div class="group">${rooms.map(r => `<a class="row" style="text-decoration:none;color:inherit" target="_blank" rel="noopener" href="${ROOM_LINKS[r]}"><div class="grow t">${r === "Las Vegas" ? "All Las Vegas tournaments today" : esc(r) + " schedule"}</div><span class="link small">Open</span></a>`).join("")}</div>
+    <div class="small muted" style="padding:0 4px">Checked ${VERIFIED} against ${esc(P.src)} Schedules change and guarantees can be cut, so confirm with the room.</div></section>`;
+}
+function toMin(t) { const m = t.match(/(\d+):(\d+)(am|pm)/); let h = +m[1] % 12; if (m[3] === "pm") h += 12; return h * 60 + +m[2]; }
+
+/* ---------- WALLET ---------- */
+function vWallet() {
+  return `
+  <div class="card-art"><div style="display:flex;justify-content:space-between;align-items:start"><span class="brand">House Money</span><span class="emv"></span></div>
+    <div><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#a6a39c;margin-bottom:6px">Trip balance</div><div class="bal">$0.00</div></div>
+    <div class="meta"><span>${esc(S.tripName || "Trip")}</span><span>${esc(city().name)}</span></div></div>
+  <section class="section"><div class="group">
+    <div class="row"><div class="grow"><div class="t">Load money</div><div class="s" style="white-space:normal">Fund the trip once and cover roulette losses and group bills.</div></div><span class="soon">Coming soon</span></div>
+    <div class="row"><div class="grow"><div class="t">Pay by card remotely</div><div class="s" style="white-space:normal">Lost the roulette but not at the table? Pay without being there.</div></div><span class="soon">Coming soon</span></div>
+  </div><div class="small muted" style="padding:0 4px">Payments aren't connected yet. Nothing here charges a card.</div></section>
+  <section class="section"><div class="section-h"><h3>Play responsibly</h3></div><div class="group"><div class="row"><div class="grow small">Gambling problem? Call <b class="num" style="user-select:all">1-800-GAMBLER</b> for free, confidential help, any time.</div></div></div></section>`;
+}
+
+/* ---------- crew, city, fresh ---------- */
+function openCrewSheet() {
+  const draw = el => {
+    el.innerHTML = sheetHead("Your crew") + `
+      <div class="field"><label for="tripIn">Trip name</label><input id="tripIn" class="input" value="${esc(S.tripName || "")}"></div>
+      <div class="group" style="background:var(--raised)">${S.people.map(p => `<div class="row indent">${mono(p.id)}<div class="grow t">${esc(p.name)}</div><button class="link" style="color:var(--muted)" data-del="${p.id}">Remove</button></div>`).join("") || `<div class="empty">Nobody yet. Add names below.</div>`}</div>
+      <div style="display:flex;gap:8px"><input id="newName" class="input" style="flex:1;min-width:0" placeholder="Add a name" autocomplete="off" enterkeyhint="done"><button class="btn" data-k="add">Add</button></div>
+      ${shareRow()}
+      <button class="btn gold block" data-k="close">Done</button>`;
+    setTimeout(() => { const i = $("#newName", el); if (i && !S.people.length) i.focus(); }, 50);
+  };
+  openSheet("", el => {
+    draw(el);
+    const add = () => { const i = $("#newName", el), v = i.value.trim(); if (!v) return;
+      v.split(",").map(s => s.trim()).filter(Boolean).forEach(n => { const p = { id: uid(), name: n.slice(0, 20) }; S.people.push(p); S.roulette.inIds.push(p.id); });
+      save(); draw(el); render(); $("#newName", el).focus(); };
+    el.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "newName") { e.preventDefault(); add(); } });
+    el.addEventListener("input", e => { if (e.target.id === "tripIn") { S.tripName = e.target.value; save(); $("#tripName").textContent = S.tripName || "Trip"; } });
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.k === "close") { closeSheet(); render(); }
+      else if (b.dataset.k === "add") add();
+      else if (b.dataset.k === "share") copyText(shareLink(), "Trip link copied");
+      else if (b.dataset.k === "makeShared") { newSharedTrip(); draw(el); }
+      else if (b.dataset.del) {
+        const id = b.dataset.del, gone = pname(id), before = JSON.stringify(S);
+        S.people = S.people.filter(p => p.id !== id);
+        S.sessions = S.sessions.filter(s => s.personId !== id);
+        S.expenses = S.expenses.filter(x => x.paidBy !== id).map(x => ({ ...x, among: x.among.filter(a => a !== id) })).filter(x => x.among.length);
+        S.rooms = S.rooms.filter(r => r.paidBy !== id).map(r => ({ ...r, guests: r.guests.filter(g => g.personId !== id) }));
+        S.roulette.inIds = S.roulette.inIds.filter(x => x !== id);
+        if (S.budgets) delete S.budgets[id];
+        save(); draw(el); render();
+        toast(`Removed ${gone}`, () => { S = JSON.parse(before); save(); render(); if ($("#scrim")) draw($(".sheet")); });
+      }
+    });
+  });
+}
+function openCitySheet() {
+  openSheet(`<div class="sheet-h"><h2>Where are you playing?</h2></div><div class="group" style="background:var(--raised)">${Object.entries(CITIES).map(([k, v]) => `<button type="button" class="row" style="width:100%;border:0;background:none;text-align:left" data-c="${k}"><div class="grow"><div class="t">${esc(v.name)}</div><div class="s">${esc(v.region)} · ${v.casinos.length} casino${v.casinos.length === 1 ? "" : "s"}</div></div>${k === S.city ? `<span class="check on">${I.check}</span>` : ""}</button>`).join("")}</div>`,
+    el => el.addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (b) { S.city = b.dataset.c; save(); closeSheet(); render(); } }));
+}
+function openFreshSheet() {
+  openSheet(`<div class="sheet-h"><h2>Start your trip</h2></div><div class="muted">This clears the example crew, sessions and bills.</div>
+    <div class="btn-row"><button class="btn" id="fNo">Keep looking</button><button class="btn gold" id="fYes">Start fresh</button></div>`,
+    el => { $("#fNo", el).onclick = closeSheet; $("#fYes", el).onclick = () => { S = blank(S.city); S.budgets = {}; newSharedTrip(); save(); closeSheet(); render(); openCrewSheet(); }; });
+}
+
+render();
+startSync();
+if ("serviceWorker" in navigator && location.protocol === "https:" && document.querySelector('link[rel="manifest"]')) {
+  try { navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}
+}
+})();
+</script>
+
+</body>
+</html>
